@@ -4,12 +4,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -22,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -64,11 +66,11 @@ fun MainScreen(modifier: Modifier = Modifier) {
         contentPadding = PaddingValues(SPACE_M),
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFEBEBEB))
+            .background(Color(0xFFE0E0E0))
     ) {
-        item { ToolCard("Scale") }
-        item { ToolCard("Convert and compress") }
-        item { ToolCard("Crop video") }
+        item { ToolCard("Scale", R.drawable.pictogram_scale) }
+        item { ToolCard("Convert and compress", R.drawable.pictogram_convert_and_compress) }
+        item { ToolCard("Crop video", R.drawable.pictogram_crop_video) }
     }
 }
 
@@ -81,17 +83,17 @@ fun MainScreenPreview() {
 }
 
 @Composable
-fun ToolCard(title: String) {
+fun ToolCard(title: String, @DrawableRes bannerResourceId: Int) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .clip(RoundedCornerShape(SPACE_S))
             .background(Color.White)
     ) {
-        Text(
-            "image placeholder",
-            textAlign = TextAlign.Center,
-            modifier = Modifier.aspectRatio(16 / 9f).background(Color(0xFFFFE8B0))
+        Image(
+            painter = painterResource(bannerResourceId),
+            contentDescription = "banner image",
+            modifier = Modifier.aspectRatio(4 / 3f)
         )
         Text(
             title,
