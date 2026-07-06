@@ -16,19 +16,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.tvz.kbistrick.ffmediatools.ui.theme.FFMediaToolsTheme
+import com.tvz.kbistrick.ffmediatools.ui.theme.AppTheme
 
 /*
 layout components:
@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            FFMediaToolsTheme {
+            AppTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     MainScreen(modifier = Modifier.padding(innerPadding))
                 }
@@ -66,7 +66,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
         contentPadding = PaddingValues(SPACE_M),
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFE0E0E0))
+            .background(MaterialTheme.colorScheme.surfaceDim)
     ) {
         item { ToolCard("Scale", R.drawable.pictogram_scale) }
         item { ToolCard("Convert and compress", R.drawable.pictogram_convert_and_compress) }
@@ -77,7 +77,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun MainScreenPreview() {
-    FFMediaToolsTheme {
+    AppTheme(dynamicColor = false) {
         MainScreen()
     }
 }
@@ -88,7 +88,7 @@ fun ToolCard(title: String, @DrawableRes bannerResourceId: Int) {
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .clip(RoundedCornerShape(SPACE_S))
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Image(
             painter = painterResource(bannerResourceId),
