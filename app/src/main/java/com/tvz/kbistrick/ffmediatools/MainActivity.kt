@@ -51,6 +51,10 @@ fun Navigation(modifier: Modifier) {
             ScaleMediaScreen(modifier)
         }
 
+        composable("tools/convertAndCompress") {
+            ConvertAndCompressScreen(modifier)
+        }
+
         composable("tools/cropVideo") {
             CropVideoScreen(modifier)
         }
