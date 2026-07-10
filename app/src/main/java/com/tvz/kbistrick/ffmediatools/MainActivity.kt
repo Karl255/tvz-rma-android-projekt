@@ -50,5 +50,9 @@ fun Navigation(modifier: Modifier) {
         composable("tools/scaleMedia") {
             ScaleMediaScreen(modifier)
         }
+
+        composable("tools/cropVideo") {
+            CropVideoScreen(modifier)
+        }
     }
 }

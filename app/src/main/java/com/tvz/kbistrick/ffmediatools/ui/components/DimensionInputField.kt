@@ -15,39 +15,45 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.tvz.kbistrick.ffmediatools.model.NumberUnit
+import com.tvz.kbistrick.ffmediatools.model.DimensionValue
+import com.tvz.kbistrick.ffmediatools.model.DimensionUnit
 import com.tvz.kbistrick.ffmediatools.ui.theme.AppTheme
 import com.tvz.kbistrick.ffmediatools.ui.theme.Space
 
 @Composable
 fun DimensionInputField(
     modifier: Modifier = Modifier,
-    value: Int = 100,
-    onValueChange: (Int) -> Unit = {},
+    value: DimensionValue = DimensionValue(100, DimensionUnit.PERCENT),
+    onValueChange: (DimensionValue) -> Unit = {},
     minValue: Int = 0,
     maxValue: Int? = null,
-    unit: NumberUnit = NumberUnit.PERCENT,
-    onNumberUnitChange: (NumberUnit) -> Unit = {},
     label: String? = null,
+    enabled: Boolean = true,
 ) {
     OutlinedTextField(
-        value.toString(),
+        value.number.toString(),
         onValueChange = {
-            val parsed = if (it.isBlank()) 0 else it.trim().toIntOrNull()
-            parsed?.let { p ->
-                onValueChange(p.coerceIn(minValue, maxValue ?: Int.MAX_VALUE))
-            }
+            val parsed =
+                if (it.isBlank()) 0
+                else it.trim().toIntOrNull() ?: 0
+
+            onValueChange(
+                value.copy(number = parsed.coerceIn(minValue, maxValue ?: Int.MAX_VALUE))
+            )
+
         },
         label = label?.let { { Text(it) } },
         suffix = {
             Text(
-                unit.displayText,
+                value.unit.displayText,
                 modifier = Modifier.clickable {
-                    onNumberUnitChange(
-                        when (unit) {
-                            NumberUnit.PIXEL -> NumberUnit.PERCENT
-                            NumberUnit.PERCENT -> NumberUnit.PIXEL
-                        }
+                    onValueChange(
+                        value.copy(
+                            unit = when (value.unit) {
+                                DimensionUnit.PIXEL -> DimensionUnit.PERCENT
+                                DimensionUnit.PERCENT -> DimensionUnit.PIXEL
+                            }
+                        )
                     )
                 }
             )
@@ -56,6 +62,7 @@ fun DimensionInputField(
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Number
         ),
+        enabled = enabled,
         modifier = modifier.padding(bottom = 5.dp), // so the input field is properly vertically centered with the label peeking out the top
     )
 }
@@ -71,8 +78,8 @@ fun DimensionInputFieldPreview() {
                 .background(Color.White)
                 .padding(Space.M)
         ) {
-            DimensionInputField(value = 100, label = "Label")
-            DimensionInputField(value = 123, label = "Label")
+            DimensionInputField(value = DimensionValue(100, DimensionUnit.PERCENT), label = "Label")
+            DimensionInputField(value = DimensionValue(720, DimensionUnit.PIXEL), label = "Label")
         }
     }
 }
