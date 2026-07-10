@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -86,7 +87,9 @@ fun ToolCard(title: String, @DrawableRes bannerResourceId: Int, onClick: () -> U
                 textAlign = TextAlign.Center,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(Space.S)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(Space.S)
             )
         }
     }
@@ -95,7 +98,7 @@ fun ToolCard(title: String, @DrawableRes bannerResourceId: Int, onClick: () -> U
 @Preview(showBackground = true)
 @Composable
 fun ToolsScreenPreview() {
-    AppTheme(dynamicColor = false) {
+    AppTheme {
         ToolsScreen(onNavigateToTool = {})
     }
 }
