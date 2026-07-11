@@ -55,7 +55,7 @@ fun AppScaffold(
         modifier = Modifier
             .fillMaxSize()
             .imePadding(),
-        bottomBar = {
+        snackbarHost = {
             MediaPickerBar(
                 media = appViewModel.media,
                 onMediaChange = appViewModel::updateMedia,
