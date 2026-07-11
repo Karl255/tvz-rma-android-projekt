@@ -11,28 +11,30 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.mzgs.ffmpegx.FFmpeg
 import com.tvz.kbistrick.ffmediatools.ui.components.MediaPickerBar
 import com.tvz.kbistrick.ffmediatools.ui.theme.AppTheme
 import com.tvz.kbistrick.ffmediatools.ui.theme.Space
-
-/*
-NOTES
-
-layout components:
-- (Lazy)Column, (Lazy)Row
-- FlowColumn, FlowRow -> wrapping
-- Box
-- LazyVertical(Staggered)Grid, LazyHorizontal(Staggered)Grid
-- VerticalPager, HorizontalPager
-*/
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+    private lateinit var ffmpeg: FFmpeg
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        ffmpeg = FFmpeg.initialize(this)
+
+        lifecycleScope.launch {
+            if (!ffmpeg.isInstalled()) {
+                ffmpeg.install()
+            }
+        }
 
         setContent {
             AppTheme {
