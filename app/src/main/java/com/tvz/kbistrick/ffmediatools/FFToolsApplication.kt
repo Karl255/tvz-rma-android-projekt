@@ -3,6 +3,8 @@ package com.tvz.kbistrick.ffmediatools
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import com.tvz.kbistrick.ffmediatools.service.FFMpegJobRunningService.Companion.JOB_FINISHED_NOTIFICATION_CHANNEL
+import com.tvz.kbistrick.ffmediatools.service.FFMpegJobRunningService.Companion.JOB_PROCESSING_NOTIFICATION_CHANNEL
 
 class FFToolsApplication : Application() {
     override fun onCreate() {
@@ -12,7 +14,7 @@ class FFToolsApplication : Application() {
 
         notificationManager.createNotificationChannel(
             NotificationChannel(
-                "job_progress",
+                JOB_PROCESSING_NOTIFICATION_CHANNEL,
                 "Media is progressing",
                 NotificationManager.IMPORTANCE_MIN
             )
@@ -20,7 +22,7 @@ class FFToolsApplication : Application() {
 
         notificationManager.createNotificationChannel(
             NotificationChannel(
-                "job_finished",
+                JOB_FINISHED_NOTIFICATION_CHANNEL,
                 "Media progressing finished",
                 NotificationManager.IMPORTANCE_DEFAULT
             )

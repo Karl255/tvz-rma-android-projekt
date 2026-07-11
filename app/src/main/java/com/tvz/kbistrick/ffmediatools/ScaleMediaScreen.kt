@@ -119,6 +119,7 @@ fun ScaleMediaScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) 
         if (hasMedia) {
             FloatingActionButton({
                 val media = appViewModel.media ?: return@FloatingActionButton
+                appViewModel.updateProcessedMediaPath(null)
 
                 scope.launch {
                     try {

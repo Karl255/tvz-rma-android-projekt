@@ -10,7 +10,14 @@ class AppViewModel : ViewModel() {
     var media by mutableStateOf<MediaInfo?>(null)
         private set
 
+    var processedMediaPath by mutableStateOf<String?>(null)
+        private set
+
     fun updateMedia(media: MediaInfo?) {
         this.media = media
+    }
+
+    fun updateProcessedMediaPath(path: String?) {
+        processedMediaPath = path
     }
 }

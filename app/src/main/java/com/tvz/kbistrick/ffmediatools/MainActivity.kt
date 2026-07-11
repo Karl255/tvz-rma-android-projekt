@@ -1,6 +1,10 @@
 package com.tvz.kbistrick.ffmediatools
 
 import android.Manifest
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -12,7 +16,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -20,6 +26,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.mzgs.ffmpegx.ffmpeg
+import com.tvz.kbistrick.ffmediatools.service.FFMpegJobRunningService
 import com.tvz.kbistrick.ffmediatools.ui.component.MediaPickerBar
 import com.tvz.kbistrick.ffmediatools.ui.theme.AppTheme
 import com.tvz.kbistrick.ffmediatools.ui.theme.Space
@@ -39,6 +46,25 @@ class MainActivity : ComponentActivity() {
             CompositionLocalProvider(LocalMainActivity provides this) {
                 AppTheme {
                     val appViewModel: AppViewModel = viewModel()
+                    val context = LocalContext.current
+
+                    DisposableEffect(context) {
+                        val receiver = object : BroadcastReceiver() {
+                            override fun onReceive(context: Context?, intent: Intent?) {
+                                if (intent?.action == FFMpegJobRunningService.ACTION_JOB_FINISHED) {
+                                    val path = intent.getStringExtra(FFMpegJobRunningService.EXTRA_OUTPUT_PATH)
+                                    appViewModel.updateProcessedMediaPath(path)
+                                }
+                            }
+                        }
+                        
+                        val filter = IntentFilter(FFMpegJobRunningService.ACTION_JOB_FINISHED)
+                        context.registerReceiver(receiver, filter, RECEIVER_NOT_EXPORTED)
+
+                        onDispose {
+                            context.unregisterReceiver(receiver)
+                        }
+                    }
 
                     AppScaffold(appViewModel) { innerPadding ->
                         Navigation(appViewModel, Modifier.padding(innerPadding))

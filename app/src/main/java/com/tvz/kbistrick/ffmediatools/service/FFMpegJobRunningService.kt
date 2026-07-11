@@ -1,7 +1,6 @@
 package com.tvz.kbistrick.ffmediatools.service
 
 import android.Manifest
-import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.content.pm.ServiceInfo
@@ -14,7 +13,11 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.PermissionChecker
 import com.mzgs.ffmpegx.FFmpeg
 import com.tvz.kbistrick.ffmediatools.R
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 class FFMpegJobRunningService : Service() {
 
@@ -33,8 +36,9 @@ class FFMpegJobRunningService : Service() {
             Actions.START_WITH_ARGS.toString() -> {
                 val commandArgs = intent.getStringExtra("commandArgs") ?: error("No command arguments provided")
                 val notificationDescription = intent.getStringExtra("notificationDescription")
+                val outputPath = intent.getStringExtra("outputPath")
 
-                start(startId, commandArgs, notificationDescription)
+                start(startId, commandArgs, notificationDescription, outputPath)
             }
 
             Actions.ABORT.toString() -> {
@@ -46,8 +50,8 @@ class FFMpegJobRunningService : Service() {
         return START_NOT_STICKY
     }
 
-    private fun start(startId: Int, commandArgs: String, notificationDescription: String?) {
-        val notification = NotificationCompat.Builder(this, "job_progress")
+    private fun start(startId: Int, commandArgs: String, notificationDescription: String?, outputPath: String?) {
+        val notification = NotificationCompat.Builder(this, JOB_PROCESSING_NOTIFICATION_CHANNEL)
             .setSmallIcon(R.drawable.app_icon_dark)
             .setContentTitle("Media is processing")
             .setContentText(notificationDescription)
@@ -56,7 +60,7 @@ class FFMpegJobRunningService : Service() {
             .build()
 
         startForeground(
-            1,
+            JOB_PROCESSING_NOTIFICATION_ID,
             notification,
             ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROCESSING
         )
@@ -65,7 +69,6 @@ class FFMpegJobRunningService : Service() {
 
         if (notificationPermission != PermissionChecker.PERMISSION_GRANTED) {
             Log.w("FFMpegJobRunningService", "Notification permission not granted")
-            return
         }
 
         val time1 = Calendar.getInstance().time
@@ -75,6 +78,13 @@ class FFMpegJobRunningService : Service() {
             try {
                 FFmpeg.getInstance().executeAsync(commandArgs)
                 Log.i("FFMpegJobRunningService", "Media processing finished")
+                
+                outputPath?.let { path ->
+                    val broadcastIntent = Intent(ACTION_JOB_FINISHED).apply {
+                        putExtra(EXTRA_OUTPUT_PATH, path)
+                    }
+                    sendBroadcast(broadcastIntent)
+                }
             } catch (e: Exception) {
                 success = false
                 Log.e("FFMpegJobRunningService", e.message, e)
@@ -88,7 +98,7 @@ class FFMpegJobRunningService : Service() {
     }
 
     fun showFinishedNotification(successful: Boolean, durationMs: Long) {
-        val notification = NotificationCompat.Builder(this, "job_finished")
+        val notification = NotificationCompat.Builder(this, JOB_FINISHED_NOTIFICATION_CHANNEL)
             .setSmallIcon(R.drawable.app_icon_dark)
             .setContentTitle(if (successful) "Media processing finished" else "Media processing failed")
             .setAutoCancel(true)
@@ -101,16 +111,15 @@ class FFMpegJobRunningService : Service() {
             .build()
 
         with(NotificationManagerCompat.from(this)) {
-            cancel(1)
+            cancel(JOB_PROCESSING_NOTIFICATION_ID)
 
             val notificationPermission = PermissionChecker.checkSelfPermission(this@FFMpegJobRunningService, Manifest.permission.POST_NOTIFICATIONS)
 
             if (notificationPermission != PermissionChecker.PERMISSION_GRANTED) {
                 Log.w("FFMpegJobRunningService", "Notification permission not granted")
-                return
             }
 
-            notify(2, notification)
+            notify(JOB_FINISHED_NOTIFICATION_ID, notification)
         }
     }
 
@@ -121,5 +130,15 @@ class FFMpegJobRunningService : Service() {
 
     enum class Actions {
         START_WITH_ARGS, ABORT
+    }
+
+    companion object {
+        const val JOB_PROCESSING_NOTIFICATION_ID = 1
+        const val JOB_PROCESSING_NOTIFICATION_CHANNEL = "job_progress"
+        const val JOB_FINISHED_NOTIFICATION_ID = 2
+        const val JOB_FINISHED_NOTIFICATION_CHANNEL = "job_finished"
+
+        const val ACTION_JOB_FINISHED = "com.tvz.kbistrick.ffmediatools.ACTION_JOB_FINISHED"
+        const val EXTRA_OUTPUT_PATH = "extra_output_path"
     }
 }
