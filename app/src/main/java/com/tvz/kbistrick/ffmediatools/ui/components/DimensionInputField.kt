@@ -19,7 +19,7 @@ import com.tvz.kbistrick.ffmediatools.model.DimensionValue
 import com.tvz.kbistrick.ffmediatools.model.DimensionUnit
 import com.tvz.kbistrick.ffmediatools.ui.theme.AppTheme
 import com.tvz.kbistrick.ffmediatools.ui.theme.Space
-import com.tvz.kbistrick.ffmediatools.utils.toggleUnit
+import com.tvz.kbistrick.ffmediatools.util.toggleUnit
 
 @Composable
 fun DimensionInputField(

@@ -1,4 +1,4 @@
-package com.tvz.kbistrick.ffmediatools.utils
+package com.tvz.kbistrick.ffmediatools.util
 
 import android.content.Context
 import android.graphics.BitmapFactory
@@ -20,7 +20,7 @@ suspend fun loadMediaInfo(context: Context, uri: Uri): MediaInfo = withContext(D
 
     MediaInfo(
         uri = uri,
-        displayName = loadDisplayName(context, uri),
+        fileName = loadDisplayName(context, uri),
         mimeType = mimeType,
         width = width,
         height = height,
@@ -29,12 +29,14 @@ suspend fun loadMediaInfo(context: Context, uri: Uri): MediaInfo = withContext(D
     )
 }
 
-private fun loadDisplayName(context: Context, uri: Uri): String? = try {
-    context.contentResolver
-        .query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
-        ?.use { cursor -> if (cursor.moveToFirst()) cursor.getString(0) else null }
-} catch (_: Exception) {
-    null
+private fun loadDisplayName(context: Context, uri: Uri): String? {
+    return try {
+        context.contentResolver
+            .query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
+            ?.use { cursor -> if (cursor.moveToFirst()) cursor.getString(0) else null }
+    } catch (_: Exception) {
+        null
+    }
 }
 
 private fun loadImageDimensions(context: Context, uri: Uri): Pair<Int?, Int?> = try {

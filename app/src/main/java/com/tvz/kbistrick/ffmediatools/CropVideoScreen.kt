@@ -28,7 +28,7 @@ import com.tvz.kbistrick.ffmediatools.ui.components.DimensionInputField
 import com.tvz.kbistrick.ffmediatools.ui.components.MediaPreview
 import com.tvz.kbistrick.ffmediatools.ui.theme.AppTheme
 import com.tvz.kbistrick.ffmediatools.ui.theme.Space
-import com.tvz.kbistrick.ffmediatools.utils.toggleUnit
+import com.tvz.kbistrick.ffmediatools.util.toggleUnit
 
 @Composable
 fun CropVideoScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) {

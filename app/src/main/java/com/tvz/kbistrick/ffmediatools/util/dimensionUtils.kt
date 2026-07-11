@@ -1,4 +1,4 @@
-package com.tvz.kbistrick.ffmediatools.utils
+package com.tvz.kbistrick.ffmediatools.util
 
 import com.tvz.kbistrick.ffmediatools.model.DimensionUnit
 import com.tvz.kbistrick.ffmediatools.model.DimensionValue

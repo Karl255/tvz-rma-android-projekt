@@ -9,26 +9,33 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.FilledIconToggleButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.tvz.kbistrick.ffmediatools.model.DimensionUnit
 import com.tvz.kbistrick.ffmediatools.model.DimensionValue
+import com.tvz.kbistrick.ffmediatools.service.FFMpegService
 import com.tvz.kbistrick.ffmediatools.ui.components.AutoPreviewOption
 import com.tvz.kbistrick.ffmediatools.ui.components.DimensionInputField
 import com.tvz.kbistrick.ffmediatools.ui.components.MediaPreview
 import com.tvz.kbistrick.ffmediatools.ui.theme.AppTheme
 import com.tvz.kbistrick.ffmediatools.ui.theme.Space
-import com.tvz.kbistrick.ffmediatools.utils.toggleUnit
+import com.tvz.kbistrick.ffmediatools.util.toggleUnit
 
 @Composable
 fun ScaleMediaScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) {
@@ -38,6 +45,7 @@ fun ScaleMediaScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) 
     var height by remember { mutableStateOf(DimensionValue(100, DimensionUnit.PERCENT)) }
 
     val hasMedia = appViewModel.media != null
+    val ffmpeg = LocalFFmpeg.current
 
     Column(
         verticalArrangement = Arrangement.spacedBy(Space.M),
@@ -104,6 +112,16 @@ fun ScaleMediaScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) 
                 enabled = hasMedia && !linkDimensions,
                 modifier = Modifier.weight(1f)
             )
+        }
+
+        if (hasMedia) {
+            FloatingActionButton({
+                val media = appViewModel.media ?: return@FloatingActionButton
+
+                FFMpegService.runScalingJob(ffmpeg, media, width, height)
+            }) {
+                Icon(Icons.Filled.PlayArrow, contentDescription = "Start process")
+            }
         }
     }
 }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -37,11 +38,13 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            AppTheme {
-                val appViewModel: AppViewModel = viewModel()
+            CompositionLocalProvider(LocalFFmpeg provides ffmpeg) {
+                AppTheme {
+                    val appViewModel: AppViewModel = viewModel()
 
-                AppScaffold(appViewModel) { innerPadding ->
-                    Navigation(appViewModel, Modifier.padding(innerPadding))
+                    AppScaffold(appViewModel) { innerPadding ->
+                        Navigation(appViewModel, Modifier.padding(innerPadding))
+                    }
                 }
             }
         }

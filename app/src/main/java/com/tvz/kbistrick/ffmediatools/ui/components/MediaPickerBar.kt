@@ -29,7 +29,7 @@ import com.tvz.kbistrick.ffmediatools.model.MediaFormat
 import com.tvz.kbistrick.ffmediatools.model.MediaInfo
 import com.tvz.kbistrick.ffmediatools.ui.theme.AppTheme
 import com.tvz.kbistrick.ffmediatools.ui.theme.Space
-import com.tvz.kbistrick.ffmediatools.utils.loadMediaInfo
+import com.tvz.kbistrick.ffmediatools.util.loadMediaInfo
 import kotlinx.coroutines.launch
 
 @Composable
@@ -58,7 +58,7 @@ fun MediaPickerBar(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    media?.let { it.displayName ?: "Unnamed file" } ?: "No media selected",
+                    media?.let { it.fileName ?: "Unnamed file" } ?: "No media selected",
                     style = MaterialTheme.typography.bodyMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,

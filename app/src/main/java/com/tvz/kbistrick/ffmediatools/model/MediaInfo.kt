@@ -4,7 +4,7 @@ import android.net.Uri
 
 data class MediaInfo(
     val uri: Uri,
-    val displayName: String?,
+    val fileName: String?,
     val mimeType: String?,
     val width: Int?,
     val height: Int?,
