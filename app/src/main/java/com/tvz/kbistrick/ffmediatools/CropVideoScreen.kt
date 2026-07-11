@@ -23,9 +23,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.tvz.kbistrick.ffmediatools.model.DimensionUnit
 import com.tvz.kbistrick.ffmediatools.model.DimensionValue
-import com.tvz.kbistrick.ffmediatools.ui.components.AutoPreviewOption
-import com.tvz.kbistrick.ffmediatools.ui.components.DimensionInputField
-import com.tvz.kbistrick.ffmediatools.ui.components.MediaPreview
+import com.tvz.kbistrick.ffmediatools.ui.component.AutoPreviewOption
+import com.tvz.kbistrick.ffmediatools.ui.component.DimensionInputField
+import com.tvz.kbistrick.ffmediatools.ui.component.MediaPreview
 import com.tvz.kbistrick.ffmediatools.ui.theme.AppTheme
 import com.tvz.kbistrick.ffmediatools.ui.theme.Space
 import com.tvz.kbistrick.ffmediatools.util.toggleUnit

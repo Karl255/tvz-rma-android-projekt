@@ -1,6 +1,7 @@
 package com.tvz.kbistrick.ffmediatools
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,37 +16,38 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.tvz.kbistrick.ffmediatools.model.DimensionUnit
 import com.tvz.kbistrick.ffmediatools.model.DimensionValue
 import com.tvz.kbistrick.ffmediatools.service.FFMpegService
-import com.tvz.kbistrick.ffmediatools.ui.components.AutoPreviewOption
-import com.tvz.kbistrick.ffmediatools.ui.components.DimensionInputField
-import com.tvz.kbistrick.ffmediatools.ui.components.MediaPreview
+import com.tvz.kbistrick.ffmediatools.ui.component.AutoPreviewOption
+import com.tvz.kbistrick.ffmediatools.ui.component.DimensionInputField
+import com.tvz.kbistrick.ffmediatools.ui.component.ErrorDialog
+import com.tvz.kbistrick.ffmediatools.ui.component.MediaPreview
 import com.tvz.kbistrick.ffmediatools.ui.theme.AppTheme
 import com.tvz.kbistrick.ffmediatools.ui.theme.Space
 import com.tvz.kbistrick.ffmediatools.util.toggleUnit
+import kotlinx.coroutines.launch
 
 @Composable
 fun ScaleMediaScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) {
+    val scope = rememberCoroutineScope()
     var shouldAutoPreview by remember { mutableStateOf(true) }
     var linkDimensions by remember { mutableStateOf(true) }
     var width by remember { mutableStateOf(DimensionValue(100, DimensionUnit.PERCENT)) }
     var height by remember { mutableStateOf(DimensionValue(100, DimensionUnit.PERCENT)) }
+    var error by remember { mutableStateOf<String?>(null) }
 
     val hasMedia = appViewModel.media != null
-    val ffmpeg = LocalFFmpeg.current
+    val mainActivity = LocalMainActivity.current
 
     Column(
         verticalArrangement = Arrangement.spacedBy(Space.M),
@@ -118,10 +120,21 @@ fun ScaleMediaScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) 
             FloatingActionButton({
                 val media = appViewModel.media ?: return@FloatingActionButton
 
-                FFMpegService.runScalingJob(ffmpeg, media, width, height)
+                scope.launch {
+                    try {
+                        FFMpegService.runScalingJob(mainActivity, media, width, height)
+                    } catch (e: Exception) {
+                        Log.e("ScaleMediaScreen", e.message, e)
+                        error = e.message
+                    }
+                }
             }) {
                 Icon(Icons.Filled.PlayArrow, contentDescription = "Start process")
             }
+        }
+
+        error?.let {
+            ErrorDialog(it, { error = null })
         }
     }
 }

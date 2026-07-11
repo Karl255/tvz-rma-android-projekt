@@ -1,4 +1,4 @@
-package com.tvz.kbistrick.ffmediatools.ui.components
+package com.tvz.kbistrick.ffmediatools.ui.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

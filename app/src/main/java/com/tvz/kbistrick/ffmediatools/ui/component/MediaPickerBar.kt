@@ -1,4 +1,4 @@
-package com.tvz.kbistrick.ffmediatools.ui.components
+package com.tvz.kbistrick.ffmediatools.ui.component
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
