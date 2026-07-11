@@ -20,7 +20,8 @@ import com.tvz.kbistrick.ffmediatools.ui.theme.Space
 @Composable
 fun AutoPreviewOption(
     isChecked: Boolean,
-    onCheckedChange: ((Boolean) -> Unit)? = null
+    onCheckedChange: ((Boolean) -> Unit)? = null,
+    enabled: Boolean = true,
 ) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -28,7 +29,7 @@ fun AutoPreviewOption(
         modifier = Modifier.fillMaxWidth()
     ) {
         Text("Auto-preview")
-        Switch(checked = isChecked, onCheckedChange = onCheckedChange)
+        Switch(checked = isChecked, onCheckedChange = onCheckedChange, enabled = enabled)
     }
 }
 

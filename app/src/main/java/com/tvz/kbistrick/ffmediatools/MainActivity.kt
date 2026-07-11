@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -41,6 +42,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Navigation(modifier: Modifier) {
     val navController = rememberNavController()
+    val appViewModel: AppViewModel = viewModel()
 
     NavHost(navController, startDestination = "tools") {
         composable("tools") {
@@ -48,15 +50,15 @@ fun Navigation(modifier: Modifier) {
         }
 
         composable("tools/scaleMedia") {
-            ScaleMediaScreen(modifier)
+            ScaleMediaScreen(appViewModel, modifier)
         }
 
         composable("tools/convertAndCompress") {
-            ConvertAndCompressScreen(modifier)
+            ConvertAndCompressScreen(appViewModel, modifier)
         }
 
         composable("tools/cropVideo") {
-            CropVideoScreen(modifier)
+            CropVideoScreen(appViewModel, modifier)
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.tvz.kbistrick.ffmediatools
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,8 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Link
+import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,20 +21,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.tvz.kbistrick.ffmediatools.model.DimensionValue
 import com.tvz.kbistrick.ffmediatools.model.DimensionUnit
+import com.tvz.kbistrick.ffmediatools.model.DimensionValue
 import com.tvz.kbistrick.ffmediatools.ui.components.AutoPreviewOption
 import com.tvz.kbistrick.ffmediatools.ui.components.DimensionInputField
 import com.tvz.kbistrick.ffmediatools.ui.components.MediaPreview
 import com.tvz.kbistrick.ffmediatools.ui.theme.AppTheme
 import com.tvz.kbistrick.ffmediatools.ui.theme.Space
+import com.tvz.kbistrick.ffmediatools.utils.toggleUnit
 
 @Composable
-fun ScaleMediaScreen(modifier: Modifier = Modifier) {
+fun ScaleMediaScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) {
     var shouldAutoPreview by remember { mutableStateOf(true) }
-    var linkWidthHeight by remember { mutableStateOf(true) }
+    var linkDimensions by remember { mutableStateOf(true) }
     var width by remember { mutableStateOf(DimensionValue(100, DimensionUnit.PERCENT)) }
     var height by remember { mutableStateOf(DimensionValue(100, DimensionUnit.PERCENT)) }
+
+    val hasMedia = appViewModel.media != null
 
     Column(
         verticalArrangement = Arrangement.spacedBy(Space.M),
@@ -49,7 +53,7 @@ fun ScaleMediaScreen(modifier: Modifier = Modifier) {
 
         MediaPreview()
 
-        AutoPreviewOption(shouldAutoPreview) { shouldAutoPreview = it }
+        AutoPreviewOption(shouldAutoPreview, { shouldAutoPreview = it }, enabled = hasMedia)
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(Space.S),
@@ -59,40 +63,56 @@ fun ScaleMediaScreen(modifier: Modifier = Modifier) {
             DimensionInputField(
                 value = width,
                 onValueChange = {
-                    width = it
-
-                    if (linkWidthHeight) {
-                        height = it
+                    if (linkDimensions) {
+                        if (width.unit != it.unit) {
+                            linkDimensions = false
+                        } else if (it.unit == DimensionUnit.PERCENT) {
+                            height = it
+                        }
                     }
+
+                    width = it
                 },
+                pixelsAt100Percent = appViewModel.media?.width,
                 label = "Width",
+                enabled = hasMedia,
                 modifier = Modifier.weight(1f)
             )
 
-            IconToggleButton(linkWidthHeight, {
-                linkWidthHeight = it
-                if (linkWidthHeight) {
-                    height = width
-                }
-            }) {
+            FilledIconToggleButton(
+                linkDimensions,
+                {
+                    linkDimensions = it
+                    if (linkDimensions) {
+                        if (width.unit == DimensionUnit.PIXEL) {
+                            width = width.toggleUnit(appViewModel.media?.width)
+                        }
+
+                        height = width
+                    }
+                },
+                enabled = hasMedia
+            ) {
                 Icon(Icons.Default.Link, contentDescription = "Link dimensions")
             }
 
             DimensionInputField(
                 value = height,
                 onValueChange = { height = it },
+                pixelsAt100Percent = appViewModel.media?.height,
                 label = "Height",
-                enabled = !linkWidthHeight,
+                enabled = hasMedia && !linkDimensions,
                 modifier = Modifier.weight(1f)
             )
         }
     }
 }
 
+@SuppressLint("ViewModelConstructorInComposable")
 @Preview(showBackground = true)
 @Composable
 fun ScaleMediaScreenPreview() {
     AppTheme {
-        ScaleMediaScreen(Modifier)
+        ScaleMediaScreen(AppViewModel(), Modifier)
     }
 }

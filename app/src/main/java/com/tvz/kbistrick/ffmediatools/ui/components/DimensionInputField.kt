@@ -19,14 +19,16 @@ import com.tvz.kbistrick.ffmediatools.model.DimensionValue
 import com.tvz.kbistrick.ffmediatools.model.DimensionUnit
 import com.tvz.kbistrick.ffmediatools.ui.theme.AppTheme
 import com.tvz.kbistrick.ffmediatools.ui.theme.Space
+import com.tvz.kbistrick.ffmediatools.utils.toggleUnit
 
 @Composable
 fun DimensionInputField(
     modifier: Modifier = Modifier,
     value: DimensionValue = DimensionValue(100, DimensionUnit.PERCENT),
     onValueChange: (DimensionValue) -> Unit = {},
-    minValue: Int = 0,
+    minValue: Int = 1,
     maxValue: Int? = null,
+    pixelsAt100Percent: Int? = null,
     label: String? = null,
     enabled: Boolean = true,
 ) {
@@ -47,14 +49,7 @@ fun DimensionInputField(
             Text(
                 value.unit.displayText,
                 modifier = Modifier.clickable {
-                    onValueChange(
-                        value.copy(
-                            unit = when (value.unit) {
-                                DimensionUnit.PIXEL -> DimensionUnit.PERCENT
-                                DimensionUnit.PERCENT -> DimensionUnit.PIXEL
-                            }
-                        )
-                    )
+                    onValueChange(value.toggleUnit(pixelsAt100Percent))
                 }
             )
         },

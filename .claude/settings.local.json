@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//home/karl/.gradle/caches/modules-2/files-2.1/**)",
+      "Read(//home/karl/.gradle/caches/modules-2/files-2.1/androidx.compose.material3/**)",
+      "Read(//mnt/c/Users/karl/.gradle/caches/modules-2/files-2.1/androidx.compose.material3/material3/**)",
+      "Read(//mnt/c/Users/karl/.gradle/caches/modules-2/files-2.1/androidx.compose.material3/material3-android/**)",
+      "Read(//mnt/c/Users/karl/.gradle/caches/modules-2/files-2.1/androidx.compose/compose-bom/**)"
+    ]
+  }
+}

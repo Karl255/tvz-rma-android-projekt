@@ -1,5 +1,6 @@
 package com.tvz.kbistrick.ffmediatools
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,10 +38,12 @@ import com.tvz.kbistrick.ffmediatools.ui.theme.Space
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConvertAndCompressScreen(modifier: Modifier = Modifier) {
+fun ConvertAndCompressScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) {
     var shouldAutoPreview by remember { mutableStateOf(true) }
     var formatDropdownExpanded by remember { mutableStateOf(false) }
     var selectedFormat by remember { mutableStateOf(MediaFormat.PNG) }
+
+    val hasMedia = appViewModel.media != null
 
     Column(
         verticalArrangement = Arrangement.spacedBy(Space.M),
@@ -56,7 +59,7 @@ fun ConvertAndCompressScreen(modifier: Modifier = Modifier) {
 
         MediaPreview()
 
-        AutoPreviewOption(shouldAutoPreview) { shouldAutoPreview = it }
+        AutoPreviewOption(shouldAutoPreview, { shouldAutoPreview = it }, enabled = hasMedia)
 
         ExposedDropdownMenuBox(
             expanded = formatDropdownExpanded,
@@ -71,7 +74,8 @@ fun ConvertAndCompressScreen(modifier: Modifier = Modifier) {
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(formatDropdownExpanded) },
                 modifier = Modifier
                     .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                    .fillMaxWidth()
+                    .fillMaxWidth(),
+                enabled = hasMedia
             )
 
             ExposedDropdownMenu(
@@ -92,10 +96,11 @@ fun ConvertAndCompressScreen(modifier: Modifier = Modifier) {
     }
 }
 
+@SuppressLint("ViewModelConstructorInComposable")
 @Preview(showBackground = true)
 @Composable
 fun ConvertAndCompressScreenPreview() {
     AppTheme {
-        ConvertAndCompressScreen(Modifier)
+        ConvertAndCompressScreen(AppViewModel(), Modifier)
     }
 }

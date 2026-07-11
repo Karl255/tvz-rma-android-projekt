@@ -1,5 +1,6 @@
 package com.tvz.kbistrick.ffmediatools
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,8 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Link
+import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,15 +28,22 @@ import com.tvz.kbistrick.ffmediatools.ui.components.DimensionInputField
 import com.tvz.kbistrick.ffmediatools.ui.components.MediaPreview
 import com.tvz.kbistrick.ffmediatools.ui.theme.AppTheme
 import com.tvz.kbistrick.ffmediatools.ui.theme.Space
+import com.tvz.kbistrick.ffmediatools.utils.toggleUnit
 
 @Composable
-fun CropVideoScreen(modifier: Modifier = Modifier) {
-    var shouldAutoPreview by remember { mutableStateOf(true) }
+fun CropVideoScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) {
+    var shouldAutoPreview by remember {
+        mutableStateOf(
+            appViewModel.media?.format?.isVideo?.not() ?: true
+        )
+    }
     var linkOffsets by remember { mutableStateOf(false) }
-    var top by remember { mutableStateOf(DimensionValue(100, DimensionUnit.PERCENT)) }
-    var bottom by remember { mutableStateOf(DimensionValue(100, DimensionUnit.PERCENT)) }
-    var left by remember { mutableStateOf(DimensionValue(100, DimensionUnit.PERCENT)) }
-    var right by remember { mutableStateOf(DimensionValue(100, DimensionUnit.PERCENT)) }
+    var top by remember { mutableStateOf(DimensionValue(0, DimensionUnit.PERCENT)) }
+    var bottom by remember { mutableStateOf(DimensionValue(0, DimensionUnit.PERCENT)) }
+    var left by remember { mutableStateOf(DimensionValue(0, DimensionUnit.PERCENT)) }
+    var right by remember { mutableStateOf(DimensionValue(0, DimensionUnit.PERCENT)) }
+
+    val hasMedia = appViewModel.media != null
 
     fun setAllOffsets(value: DimensionValue) {
         top = value
@@ -58,7 +66,7 @@ fun CropVideoScreen(modifier: Modifier = Modifier) {
 
         MediaPreview()
 
-        AutoPreviewOption(shouldAutoPreview) { shouldAutoPreview = it }
+        AutoPreviewOption(shouldAutoPreview, { shouldAutoPreview = it }, enabled = hasMedia)
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(Space.S),
@@ -71,29 +79,48 @@ fun CropVideoScreen(modifier: Modifier = Modifier) {
                 DimensionInputField(
                     value = top,
                     onValueChange = {
-                        top = it
-
                         if (linkOffsets) {
-                            setAllOffsets(it)
+                            if (top.unit != it.unit) {
+                                linkOffsets = false
+                            } else if (it.unit == DimensionUnit.PERCENT) {
+                                bottom = it
+                                left = it
+                                right = it
+                            }
                         }
+
+                        top = it
                     },
+                    pixelsAt100Percent = appViewModel.media?.height,
                     label = "Top",
+                    enabled = hasMedia
                 )
 
                 DimensionInputField(
                     value = left,
                     onValueChange = { left = it },
+                    pixelsAt100Percent = appViewModel.media?.width,
                     label = "Left",
-                    enabled = !linkOffsets,
+                    enabled = hasMedia && !linkOffsets,
                 )
             }
 
-            IconToggleButton(linkOffsets, {
-                linkOffsets = it
-                if (linkOffsets) {
-                    bottom = top
-                }
-            }) {
+            FilledIconToggleButton(
+                linkOffsets,
+                {
+                    linkOffsets = it
+                    if (linkOffsets) {
+                        if (top.unit == DimensionUnit.PIXEL) {
+                            top = top.toggleUnit(appViewModel.media?.width)
+                        }
+
+                        bottom = top
+                        left = top
+                        right = top
+                    }
+                },
+                enabled = hasMedia
+            ) {
                 Icon(Icons.Default.Link, contentDescription = "Link dimensions")
             }
 
@@ -103,25 +130,28 @@ fun CropVideoScreen(modifier: Modifier = Modifier) {
                 DimensionInputField(
                     value = bottom,
                     onValueChange = { bottom = it },
+                    pixelsAt100Percent = appViewModel.media?.height,
                     label = "Bottom",
-                    enabled = !linkOffsets,
+                    enabled = hasMedia && !linkOffsets,
                 )
 
                 DimensionInputField(
                     value = right,
                     onValueChange = { right = it },
+                    pixelsAt100Percent = appViewModel.media?.width,
                     label = "Right",
-                    enabled = !linkOffsets,
+                    enabled = hasMedia && !linkOffsets,
                 )
             }
         }
     }
 }
 
+@SuppressLint("ViewModelConstructorInComposable")
 @Preview(showBackground = true)
 @Composable
 fun CropVideoScreenPreview() {
     AppTheme {
-        CropVideoScreen(Modifier)
+        CropVideoScreen(AppViewModel(), Modifier)
     }
 }
