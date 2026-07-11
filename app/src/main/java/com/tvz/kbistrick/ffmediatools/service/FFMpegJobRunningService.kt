@@ -76,14 +76,22 @@ class FFMpegJobRunningService : Service() {
 
         serviceScope.launch {
             try {
-                FFmpeg.getInstance().executeAsync(commandArgs)
-                Log.i("FFMpegJobRunningService", "Media processing finished")
+                Log.i("FFMpegJobRunningService", "Media processing starting")
+                val isSuccessful = FFmpeg.getInstance().execute(commandArgs)
 
-                sendBroadcast(
-                    Intent(ACTION_JOB_FINISHED).apply {
-                        putExtra(EXTRA_OUTPUT_PATH, outputPath)
-                    }
-                )
+                if (isSuccessful) {
+                    Log.i("FFMpegJobRunningService", "Media processing finished")
+
+                    sendBroadcast(
+                        Intent(ACTION_JOB_FINISHED).apply {
+                            setPackage(packageName)
+                            putExtra(EXTRA_OUTPUT_PATH, outputPath)
+                        }
+                    )
+                } else {
+                    success = false
+                    Log.e("FFMpegJobRunningService", "FFmpeg execution failed")
+                }
             } catch (e: Exception) {
                 success = false
                 Log.e("FFMpegJobRunningService", e.message, e)

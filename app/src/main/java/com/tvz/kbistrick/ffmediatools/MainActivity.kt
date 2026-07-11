@@ -46,24 +46,29 @@ class MainActivity : ComponentActivity() {
         setContent {
             AppTheme {
                 val appViewModel: AppViewModel = viewModel()
-                val context = LocalContext.current
 
-                DisposableEffect(context) {
+                DisposableEffect(Unit) {
                     val receiver = object : BroadcastReceiver() {
                         override fun onReceive(context: Context?, intent: Intent?) {
-                            Log.i("MainActivity", "Received broadcast: ${intent?.action}")
-                            if (intent?.action == FFMpegJobRunningService.ACTION_JOB_FINISHED) {
+                            val action = intent?.action
+                            Log.i("MainActivity", "Received broadcast: $action")
+                            if (action == FFMpegJobRunningService.ACTION_JOB_FINISHED) {
                                 val path = intent.getStringExtra(FFMpegJobRunningService.EXTRA_OUTPUT_PATH)
+                                Log.i("MainActivity", "Job finished, output path: $path")
                                 appViewModel.updateProcessedMediaPath(path)
                             }
                         }
                     }
 
                     val filter = IntentFilter(FFMpegJobRunningService.ACTION_JOB_FINISHED)
-                    context.registerReceiver(receiver, filter, RECEIVER_NOT_EXPORTED)
+                    Log.i("MainActivity", "Registering receiver for ${FFMpegJobRunningService.ACTION_JOB_FINISHED}")
+                    
+                    // Use applicationContext for a more stable registration
+                    applicationContext.registerReceiver(receiver, filter, RECEIVER_NOT_EXPORTED)
 
                     onDispose {
-                        context.unregisterReceiver(receiver)
+                        Log.i("MainActivity", "Unregistering receiver")
+                        applicationContext.unregisterReceiver(receiver)
                     }
                 }
 

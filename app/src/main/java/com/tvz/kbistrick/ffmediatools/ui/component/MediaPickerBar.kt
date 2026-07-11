@@ -132,6 +132,7 @@ fun MediaPickerBarPreview() {
                     "video/mp4",
                     1920,
                     1080,
+                    null,
                     true,
                     MediaFormat.MP4
                 ),
@@ -145,6 +146,7 @@ fun MediaPickerBarPreview() {
                     "image/gif",
                     480,
                     270,
+                    null,
                     false,
                     MediaFormat.UNKNOWN_VIDEO
                 ),
@@ -158,6 +160,7 @@ fun MediaPickerBarPreview() {
                     "image/gif",
                     480,
                     270,
+                    null,
                     false,
                     MediaFormat.UNKNOWN_VIDEO
                 ),

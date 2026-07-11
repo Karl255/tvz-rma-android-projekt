@@ -23,8 +23,9 @@ object FFMpegService {
         val input = copyToCache(context, mediaInfo.uri, fileName)
         val output = File(context.cacheDir, input.name.addFilenameSuffix("_s"))
 
-        val widthParam = width.toScalingParam("iw")
-        val heightParam = height.toScalingParam("ih")
+        val (width2, height2) = Pair(width, height).rotate(mediaInfo.rotation ?: 0)
+        val widthParam = width2.toScalingParam("iw")
+        val heightParam = height2.toScalingParam("ih")
         val commandArgs =
             """-y -i "${input.absolutePath}" -vf "scale=$widthParam:$heightParam" "${output.absolutePath}""""
 
@@ -33,7 +34,7 @@ object FFMpegService {
             it.putExtra("commandArgs", commandArgs)
             it.putExtra("inputFilename", input.name)
             it.putExtra("outputPath", output.absolutePath)
-            it.putExtra("notificationDescription", "Scaling ${if (mediaInfo.isVideo) "ideo" else "image"}")
+            it.putExtra("notificationDescription", "Scaling ${if (mediaInfo.isVideo) "video" else "image"}")
         }
 
         context.startForegroundService(intent)
@@ -63,5 +64,13 @@ object FFMpegService {
         } else {
             this.substring(0, dotIndex) + suffix + this.substring(dotIndex)
         }
+    }
+
+    private fun <T> Pair<T, T>.rotate(rotation: Int): Pair<T, T> {
+        if (rotation == 90 || rotation == 270) {
+            return Pair(second, first)
+        }
+
+        return this
     }
 }

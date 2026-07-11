@@ -10,6 +10,8 @@ class FFToolsApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
+        clearAppCache()
+
         val notificationManager = getSystemService(NotificationManager::class.java) as NotificationManager
 
         notificationManager.createNotificationChannel(
@@ -27,5 +29,13 @@ class FFToolsApplication : Application() {
                 NotificationManager.IMPORTANCE_DEFAULT
             )
         )
+    }
+
+    private fun clearAppCache() {
+        try {
+            cacheDir.listFiles()?.forEach { it.deleteRecursively() }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }

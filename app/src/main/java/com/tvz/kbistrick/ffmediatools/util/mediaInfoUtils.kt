@@ -14,7 +14,7 @@ suspend fun loadMediaInfo(context: Context, uri: Uri): MediaInfo = withContext(D
     val mimeType = context.contentResolver.getType(uri)
     val isVideo = mimeType?.startsWith("video/") == true
 
-    val (width, height) =
+    val (width, height, rotation) =
         if (isVideo) loadVideoDimensions(context, uri)
         else loadImageDimensions(context, uri)
 
@@ -24,6 +24,7 @@ suspend fun loadMediaInfo(context: Context, uri: Uri): MediaInfo = withContext(D
         mimeType = mimeType,
         width = width,
         height = height,
+        rotation = rotation,
         isVideo = isVideo,
         format = MediaFormat.fromMimeType(mimeType, isVideo),
     )
@@ -37,22 +38,23 @@ private fun loadDisplayName(context: Context, uri: Uri): String {
 
 }
 
-private fun loadImageDimensions(context: Context, uri: Uri): Pair<Int?, Int?> = try {
+private fun loadImageDimensions(context: Context, uri: Uri): Triple<Int?, Int?, Int?> = try {
     val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
 
     context.contentResolver.openInputStream(uri)?.use {
         BitmapFactory.decodeStream(it, null, options)
     }
 
-    Pair(
+    Triple(
         options.outWidth.takeIf { it > 0 },
         options.outHeight.takeIf { it > 0 },
+        null
     )
 } catch (_: Exception) {
-    Pair(null, null)
+    Triple(null, null, null)
 }
 
-private fun loadVideoDimensions(context: Context, uri: Uri): Pair<Int?, Int?> {
+private fun loadVideoDimensions(context: Context, uri: Uri): Triple<Int?, Int?, Int?> {
     val retriever = MediaMetadataRetriever()
 
     return try {
@@ -65,9 +67,9 @@ private fun loadVideoDimensions(context: Context, uri: Uri): Pair<Int?, Int?> {
         val rotation = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)
             ?.toIntOrNull() ?: 0
 
-        if (rotation == 90 || rotation == 270) Pair(height, width) else Pair(width, height)
+        if (rotation == 90 || rotation == 270) Triple(height, width, rotation) else Triple(width, height, rotation)
     } catch (_: Exception) {
-        Pair(null, null)
+        Triple(null, null, null)
     } finally {
         retriever.release()
     }

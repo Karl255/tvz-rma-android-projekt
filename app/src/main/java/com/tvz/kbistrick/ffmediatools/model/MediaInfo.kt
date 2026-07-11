@@ -8,6 +8,7 @@ data class MediaInfo(
     val mimeType: String?,
     val width: Int?,
     val height: Int?,
+    val rotation: Int?,
     val isVideo: Boolean,
     val format: MediaFormat,
 )
