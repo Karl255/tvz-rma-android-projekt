@@ -41,11 +41,12 @@ fun MediaPickerBar(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    val pickMedia = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        if (uri != null) {
-            scope.launch { onMediaChange(loadMediaInfo(context, uri)) }
+    val pickMedia =
+        rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            if (uri != null) {
+                scope.launch { onMediaChange(loadMediaInfo(context, uri)) }
+            }
         }
-    }
 
     ElevatedCard(modifier = modifier) {
         Row(
@@ -103,16 +104,35 @@ private fun mediaDetailsText(media: MediaInfo): String {
 @Composable
 fun MediaPickerBarPreview() {
     AppTheme {
-        Column(verticalArrangement = Arrangement.spacedBy(Space.M), modifier = Modifier.padding(Space.M)) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(Space.M),
+            modifier = Modifier.padding(Space.M)
+        ) {
             MediaPickerBar(media = null, onMediaChange = {})
 
             MediaPickerBar(
-                media = MediaInfo(Uri.EMPTY, "holiday_video.mp4", "video/mp4", 1920, 1080, true, MediaFormat.MP4),
+                media = MediaInfo(
+                    Uri.EMPTY,
+                    "holiday_video.mp4",
+                    "video/mp4",
+                    1920,
+                    1080,
+                    true,
+                    MediaFormat.MP4
+                ),
                 onMediaChange = {},
             )
 
             MediaPickerBar(
-                media = MediaInfo(Uri.EMPTY, "animation.gif", "image/gif", 480, 270, false, null),
+                media = MediaInfo(
+                    Uri.EMPTY,
+                    "animation.gif",
+                    "image/gif",
+                    480,
+                    270,
+                    false,
+                    MediaFormat.UNKNOWN_VIDEO
+                ),
                 onMediaChange = {},
             )
         }

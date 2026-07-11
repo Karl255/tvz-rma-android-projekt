@@ -112,7 +112,10 @@ fun ScaleMediaScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) 
 @Preview(showBackground = true)
 @Composable
 fun ScaleMediaScreenPreview() {
+    val appViewModel = AppViewModel()
     AppTheme {
-        ScaleMediaScreen(AppViewModel(), Modifier)
+        AppScaffold(appViewModel) { innerPadding ->
+            ScaleMediaScreen(appViewModel, Modifier.padding(innerPadding))
+        }
     }
 }

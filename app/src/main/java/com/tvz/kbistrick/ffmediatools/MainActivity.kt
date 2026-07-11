@@ -3,6 +3,7 @@ package com.tvz.kbistrick.ffmediatools
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -37,21 +38,7 @@ class MainActivity : ComponentActivity() {
             AppTheme {
                 val appViewModel: AppViewModel = viewModel()
 
-                Scaffold(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .imePadding(),
-                    bottomBar = {
-                        MediaPickerBar(
-                            media = appViewModel.media,
-                            onMediaChange = appViewModel::updateMedia,
-                            modifier = Modifier
-                                .navigationBarsPadding()
-                                .padding(horizontal = Space.M)
-                                .padding(bottom = Space.M)
-                        )
-                    }
-                ) { innerPadding ->
+                AppScaffold(appViewModel) { innerPadding ->
                     Navigation(appViewModel, Modifier.padding(innerPadding))
                 }
             }
@@ -60,7 +47,30 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Navigation(appViewModel: AppViewModel, modifier: Modifier) {
+fun AppScaffold(
+    appViewModel: AppViewModel,
+    content: @Composable ((PaddingValues) -> Unit)
+) {
+    Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .imePadding(),
+        bottomBar = {
+            MediaPickerBar(
+                media = appViewModel.media,
+                onMediaChange = appViewModel::updateMedia,
+                modifier = Modifier
+                    .navigationBarsPadding()
+                    .padding(horizontal = Space.M)
+                    .padding(bottom = Space.M)
+            )
+        },
+        content = content,
+    )
+}
+
+@Composable
+fun Navigation(appViewModel: AppViewModel, modifier: Modifier = Modifier) {
     val navController = rememberNavController()
 
     NavHost(navController, startDestination = "tools") {

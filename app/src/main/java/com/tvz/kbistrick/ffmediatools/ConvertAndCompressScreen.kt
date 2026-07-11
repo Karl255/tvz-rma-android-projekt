@@ -109,7 +109,10 @@ fun ConvertAndCompressScreen(appViewModel: AppViewModel, modifier: Modifier = Mo
 @Preview(showBackground = true)
 @Composable
 fun ConvertAndCompressScreenPreview() {
+    val appViewModel = AppViewModel()
     AppTheme {
-        ConvertAndCompressScreen(AppViewModel(), Modifier)
+        AppScaffold(appViewModel) { innerPadding ->
+            ConvertAndCompressScreen(AppViewModel(), Modifier.padding(innerPadding))
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.tvz.kbistrick.ffmediatools
 
 
+import android.annotation.SuppressLint
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -95,10 +96,14 @@ fun ToolCard(title: String, @DrawableRes bannerResourceId: Int, onClick: () -> U
     }
 }
 
+@SuppressLint("ViewModelConstructorInComposable")
 @Preview(showBackground = true)
 @Composable
 fun ToolsScreenPreview() {
+    val appViewModel = AppViewModel()
     AppTheme {
-        ToolsScreen(onNavigateToTool = {})
+        AppScaffold(appViewModel) { innerPadding ->
+            ToolsScreen(onNavigateToTool = {}, modifier = Modifier.padding(innerPadding))
+        }
     }
 }

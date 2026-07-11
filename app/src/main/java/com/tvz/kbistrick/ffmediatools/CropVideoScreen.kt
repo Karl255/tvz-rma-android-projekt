@@ -151,7 +151,10 @@ fun CropVideoScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun CropVideoScreenPreview() {
+    val appViewModel = AppViewModel()
     AppTheme {
-        CropVideoScreen(AppViewModel(), Modifier)
+        AppScaffold(appViewModel) { innerPadding ->
+            CropVideoScreen(AppViewModel(), Modifier.padding(innerPadding))
+        }
     }
 }
