@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -44,7 +45,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ScaleMediaScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) {
     val scope = rememberCoroutineScope()
-    var shouldAutoPreview by remember { mutableStateOf(true) }
+    var shouldAutoPreview by remember { mutableStateOf(appViewModel.media?.isVideo?.not() ?: true) }
     var linkDimensions by remember { mutableStateOf(true) }
     var width by remember { mutableStateOf(DimensionValue(100, DimensionUnit.PERCENT)) }
     var height by remember { mutableStateOf(DimensionValue(100, DimensionUnit.PERCENT)) }
@@ -120,22 +121,25 @@ fun ScaleMediaScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) 
             )
         }
 
-        if (hasMedia) {
-            FloatingActionButton({
-                val media = appViewModel.media ?: return@FloatingActionButton
-                appViewModel.updateProcessedMediaPath(null)
+        if (hasMedia && !shouldAutoPreview) {
+            ExtendedFloatingActionButton(
+                icon = { Icon(Icons.Filled.PlayArrow, contentDescription = "Start process") },
+                text = { Text("Preview") },
+                onClick = {
+                    val media = appViewModel.media ?: return@ExtendedFloatingActionButton
+                    appViewModel.updateProcessedMediaPath(null)
 
-                scope.launch {
-                    try {
-                        FFMpegService.runScalingJob(context, media, width, height)
-                    } catch (e: Exception) {
-                        Log.e("ScaleMediaScreen", e.message, e)
-                        error = e.message
+                    scope.launch {
+                        try {
+                            FFMpegService.runScalingJob(context, media, width, height)
+                        } catch (e: Exception) {
+                            Log.e("ScaleMediaScreen", e.message, e)
+                            error = e.message
+                        }
                     }
-                }
-            }) {
-                Icon(Icons.Filled.PlayArrow, contentDescription = "Start process")
-            }
+                },
+                modifier = Modifier.align(Alignment.End)
+            )
         }
 
         error?.let {
