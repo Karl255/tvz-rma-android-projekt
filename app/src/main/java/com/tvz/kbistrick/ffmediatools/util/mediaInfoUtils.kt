@@ -29,14 +29,12 @@ suspend fun loadMediaInfo(context: Context, uri: Uri): MediaInfo = withContext(D
     )
 }
 
-private fun loadDisplayName(context: Context, uri: Uri): String? {
-    return try {
-        context.contentResolver
-            .query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
-            ?.use { cursor -> if (cursor.moveToFirst()) cursor.getString(0) else null }
-    } catch (_: Exception) {
-        null
-    }
+private fun loadDisplayName(context: Context, uri: Uri): String {
+    return context.contentResolver
+        .query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
+        ?.use { cursor -> if (cursor.moveToFirst()) cursor.getString(0) else null }
+        ?: error("Failed to read selected media's file name")
+
 }
 
 private fun loadImageDimensions(context: Context, uri: Uri): Pair<Int?, Int?> = try {
@@ -60,9 +58,12 @@ private fun loadVideoDimensions(context: Context, uri: Uri): Pair<Int?, Int?> {
     return try {
         retriever.setDataSource(context, uri)
 
-        val width = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toIntOrNull()
-        val height = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toIntOrNull()
-        val rotation = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)?.toIntOrNull() ?: 0
+        val width = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)
+            ?.toIntOrNull()
+        val height = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)
+            ?.toIntOrNull()
+        val rotation = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)
+            ?.toIntOrNull() ?: 0
 
         if (rotation == 90 || rotation == 270) Pair(height, width) else Pair(width, height)
     } catch (_: Exception) {

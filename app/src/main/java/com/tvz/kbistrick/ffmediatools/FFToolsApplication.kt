@@ -8,13 +8,22 @@ class FFToolsApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        val channel = NotificationChannel(
-            "job_progress", "Media conversion progress",
-            NotificationManager.IMPORTANCE_MIN
+        val notificationManager = getSystemService(NotificationManager::class.java) as NotificationManager
+
+        notificationManager.createNotificationChannel(
+            NotificationChannel(
+                "job_progress",
+                "Media is progressing",
+                NotificationManager.IMPORTANCE_MIN
+            )
         )
 
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-
-        notificationManager.createNotificationChannel(channel)
+        notificationManager.createNotificationChannel(
+            NotificationChannel(
+                "job_finished",
+                "Media progressing finished",
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+        )
     }
 }
