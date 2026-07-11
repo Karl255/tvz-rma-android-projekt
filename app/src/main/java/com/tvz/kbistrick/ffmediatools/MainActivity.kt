@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.PaddingValues
@@ -29,6 +30,7 @@ import com.tvz.kbistrick.ffmediatools.service.FFMpegJobRunningService
 import com.tvz.kbistrick.ffmediatools.ui.component.MediaPickerBar
 import com.tvz.kbistrick.ffmediatools.ui.theme.AppTheme
 import com.tvz.kbistrick.ffmediatools.ui.theme.Space
+import com.tvz.kbistrick.ffmediatools.util.saveToGallery
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -49,6 +51,7 @@ class MainActivity : ComponentActivity() {
                 DisposableEffect(context) {
                     val receiver = object : BroadcastReceiver() {
                         override fun onReceive(context: Context?, intent: Intent?) {
+                            Log.i("MainActivity", "Received broadcast: ${intent?.action}")
                             if (intent?.action == FFMpegJobRunningService.ACTION_JOB_FINISHED) {
                                 val path = intent.getStringExtra(FFMpegJobRunningService.EXTRA_OUTPUT_PATH)
                                 appViewModel.updateProcessedMediaPath(path)
@@ -77,6 +80,7 @@ fun AppScaffold(
     appViewModel: AppViewModel,
     content: @Composable ((PaddingValues) -> Unit)
 ) {
+    val context = LocalContext.current
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -84,7 +88,10 @@ fun AppScaffold(
         snackbarHost = {
             MediaPickerBar(
                 media = appViewModel.media,
+                processedMediaPath = appViewModel.processedMediaPath,
                 onMediaChange = appViewModel::updateMedia,
+                onAllMediaClear = appViewModel::clearAllMedia,
+                onSaveProcessedMedia = { path -> saveToGallery(context, path) },
                 modifier = Modifier
                     .navigationBarsPadding()
                     .padding(horizontal = Space.M)

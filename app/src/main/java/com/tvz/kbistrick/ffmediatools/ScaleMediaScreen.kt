@@ -14,16 +14,16 @@ import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilledIconToggleButton
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -53,6 +53,14 @@ fun ScaleMediaScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) 
 
     val hasMedia = appViewModel.media != null
     val context = LocalContext.current
+
+    LaunchedEffect(appViewModel.media) {
+        val media = appViewModel.media
+
+        if (media != null) {
+            shouldAutoPreview = !media.isVideo
+        }
+    }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(Space.M),

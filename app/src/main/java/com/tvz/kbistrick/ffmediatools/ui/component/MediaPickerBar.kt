@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -35,7 +37,10 @@ import kotlinx.coroutines.launch
 @Composable
 fun MediaPickerBar(
     media: MediaInfo?,
+    processedMediaPath: String?,
     onMediaChange: (MediaInfo?) -> Unit,
+    onAllMediaClear: () -> Unit,
+    onSaveProcessedMedia: (path: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -76,7 +81,7 @@ fun MediaPickerBar(
             }
 
             if (media != null) {
-                IconButton({ onMediaChange(null) }) {
+                IconButton({ onAllMediaClear() }) {
                     Icon(Icons.Default.Close, contentDescription = "Clear selected media")
                 }
             }
@@ -85,6 +90,12 @@ fun MediaPickerBar(
                 pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo))
             }) {
                 Icon(Icons.Default.PhotoLibrary, contentDescription = "Pick media")
+            }
+
+            if (processedMediaPath != null) {
+                FloatingActionButton({ onSaveProcessedMedia(processedMediaPath) }) {
+                    Icon(Icons.Default.Save, contentDescription = "Save processed media")
+                }
             }
         }
     }
@@ -103,15 +114,19 @@ private fun mediaDetailsText(media: MediaInfo): String {
 @Preview(showBackground = true)
 @Composable
 fun MediaPickerBarPreview() {
+    val mediaPickerBar = @Composable { mediaInfo: MediaInfo?, processedMediaPath: String? ->
+        MediaPickerBar(mediaInfo, processedMediaPath, {}, {}, {})
+    }
+
     AppTheme {
         Column(
             verticalArrangement = Arrangement.spacedBy(Space.M),
             modifier = Modifier.padding(Space.M)
         ) {
-            MediaPickerBar(media = null, onMediaChange = {})
+            mediaPickerBar(null, null)
 
-            MediaPickerBar(
-                media = MediaInfo(
+            mediaPickerBar(
+                MediaInfo(
                     Uri.EMPTY,
                     "holiday_video.mp4",
                     "video/mp4",
@@ -120,11 +135,11 @@ fun MediaPickerBarPreview() {
                     true,
                     MediaFormat.MP4
                 ),
-                onMediaChange = {},
+                null,
             )
 
-            MediaPickerBar(
-                media = MediaInfo(
+            mediaPickerBar(
+                MediaInfo(
                     Uri.EMPTY,
                     "animation.gif",
                     "image/gif",
@@ -133,7 +148,20 @@ fun MediaPickerBarPreview() {
                     false,
                     MediaFormat.UNKNOWN_VIDEO
                 ),
-                onMediaChange = {},
+                null,
+            )
+
+            mediaPickerBar(
+                MediaInfo(
+                    Uri.EMPTY,
+                    "animation.gif",
+                    "image/gif",
+                    480,
+                    270,
+                    false,
+                    MediaFormat.UNKNOWN_VIDEO
+                ),
+                "something",
             )
         }
     }

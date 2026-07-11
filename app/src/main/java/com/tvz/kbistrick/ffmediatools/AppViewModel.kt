@@ -1,5 +1,6 @@
 package com.tvz.kbistrick.ffmediatools
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -13,11 +14,18 @@ class AppViewModel : ViewModel() {
     var processedMediaPath by mutableStateOf<String?>(null)
         private set
 
-    fun updateMedia(media: MediaInfo?) {
-        this.media = media
+    fun updateMedia(mediaInfo: MediaInfo?) {
+        media = mediaInfo
+        Log.d("AppViewModel", "Updated media: $mediaInfo")
     }
 
     fun updateProcessedMediaPath(path: String?) {
         processedMediaPath = path
+        Log.d("AppViewModel", "Updated processedMediaPath: $path")
+    }
+
+    fun clearAllMedia() {
+        updateMedia(null)
+        updateProcessedMediaPath(null)
     }
 }

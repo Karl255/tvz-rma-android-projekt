@@ -36,7 +36,7 @@ class FFMpegJobRunningService : Service() {
             Actions.START_WITH_ARGS.toString() -> {
                 val commandArgs = intent.getStringExtra("commandArgs") ?: error("No command arguments provided")
                 val notificationDescription = intent.getStringExtra("notificationDescription")
-                val outputPath = intent.getStringExtra("outputPath")
+                val outputPath = intent.getStringExtra("outputPath") ?: error("No output path provided")
 
                 start(startId, commandArgs, notificationDescription, outputPath)
             }
@@ -50,7 +50,7 @@ class FFMpegJobRunningService : Service() {
         return START_NOT_STICKY
     }
 
-    private fun start(startId: Int, commandArgs: String, notificationDescription: String?, outputPath: String?) {
+    private fun start(startId: Int, commandArgs: String, notificationDescription: String?, outputPath: String) {
         val notification = NotificationCompat.Builder(this, JOB_PROCESSING_NOTIFICATION_CHANNEL)
             .setSmallIcon(R.drawable.app_icon_dark)
             .setContentTitle("Media is processing")
@@ -78,13 +78,12 @@ class FFMpegJobRunningService : Service() {
             try {
                 FFmpeg.getInstance().executeAsync(commandArgs)
                 Log.i("FFMpegJobRunningService", "Media processing finished")
-                
-                outputPath?.let { path ->
-                    val broadcastIntent = Intent(ACTION_JOB_FINISHED).apply {
-                        putExtra(EXTRA_OUTPUT_PATH, path)
+
+                sendBroadcast(
+                    Intent(ACTION_JOB_FINISHED).apply {
+                        putExtra(EXTRA_OUTPUT_PATH, outputPath)
                     }
-                    sendBroadcast(broadcastIntent)
-                }
+                )
             } catch (e: Exception) {
                 success = false
                 Log.e("FFMpegJobRunningService", e.message, e)
