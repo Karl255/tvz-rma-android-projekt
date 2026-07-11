@@ -1,6 +1,7 @@
 package com.tvz.kbistrick.ffmediatools
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,9 +25,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import com.tvz.kbistrick.ffmediatools.model.DimensionUnit
 import com.tvz.kbistrick.ffmediatools.model.DimensionValue
+import com.tvz.kbistrick.ffmediatools.model.MediaFormat
+import com.tvz.kbistrick.ffmediatools.model.MediaInfo
 import com.tvz.kbistrick.ffmediatools.service.FFMpegService
 import com.tvz.kbistrick.ffmediatools.ui.component.AutoPreviewOption
 import com.tvz.kbistrick.ffmediatools.ui.component.DimensionInputField
@@ -47,7 +51,7 @@ fun ScaleMediaScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) 
     var error by remember { mutableStateOf<String?>(null) }
 
     val hasMedia = appViewModel.media != null
-    val mainActivity = LocalMainActivity.current
+    val context = LocalContext.current
 
     Column(
         verticalArrangement = Arrangement.spacedBy(Space.M),
@@ -123,7 +127,7 @@ fun ScaleMediaScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) 
 
                 scope.launch {
                     try {
-                        FFMpegService.runScalingJob(mainActivity, media, width, height)
+                        FFMpegService.runScalingJob(context, media, width, height)
                     } catch (e: Exception) {
                         Log.e("ScaleMediaScreen", e.message, e)
                         error = e.message
@@ -144,7 +148,23 @@ fun ScaleMediaScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) 
 @Preview(showBackground = true)
 @Composable
 fun ScaleMediaScreenPreview() {
-    val appViewModel = AppViewModel()
+    val appViewModel = AppViewModel().apply {
+        updateMedia(
+            MediaInfo(
+                uri = Uri.EMPTY,
+                fileName = "sample_video.mp4",
+                mimeType = "video/mp4",
+                width = 1920,
+                height = 1080,
+                isVideo = true,
+                format = MediaFormat.MP4
+            )
+        )
+
+        updateProcessedMediaPath("foo")
+    }
+
+
     AppTheme {
         AppScaffold(appViewModel) { innerPadding ->
             ScaleMediaScreen(appViewModel, Modifier.padding(innerPadding))

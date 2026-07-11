@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -43,32 +42,30 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            CompositionLocalProvider(LocalMainActivity provides this) {
-                AppTheme {
-                    val appViewModel: AppViewModel = viewModel()
-                    val context = LocalContext.current
+            AppTheme {
+                val appViewModel: AppViewModel = viewModel()
+                val context = LocalContext.current
 
-                    DisposableEffect(context) {
-                        val receiver = object : BroadcastReceiver() {
-                            override fun onReceive(context: Context?, intent: Intent?) {
-                                if (intent?.action == FFMpegJobRunningService.ACTION_JOB_FINISHED) {
-                                    val path = intent.getStringExtra(FFMpegJobRunningService.EXTRA_OUTPUT_PATH)
-                                    appViewModel.updateProcessedMediaPath(path)
-                                }
+                DisposableEffect(context) {
+                    val receiver = object : BroadcastReceiver() {
+                        override fun onReceive(context: Context?, intent: Intent?) {
+                            if (intent?.action == FFMpegJobRunningService.ACTION_JOB_FINISHED) {
+                                val path = intent.getStringExtra(FFMpegJobRunningService.EXTRA_OUTPUT_PATH)
+                                appViewModel.updateProcessedMediaPath(path)
                             }
                         }
-                        
-                        val filter = IntentFilter(FFMpegJobRunningService.ACTION_JOB_FINISHED)
-                        context.registerReceiver(receiver, filter, RECEIVER_NOT_EXPORTED)
-
-                        onDispose {
-                            context.unregisterReceiver(receiver)
-                        }
                     }
 
-                    AppScaffold(appViewModel) { innerPadding ->
-                        Navigation(appViewModel, Modifier.padding(innerPadding))
+                    val filter = IntentFilter(FFMpegJobRunningService.ACTION_JOB_FINISHED)
+                    context.registerReceiver(receiver, filter, RECEIVER_NOT_EXPORTED)
+
+                    onDispose {
+                        context.unregisterReceiver(receiver)
                     }
+                }
+
+                AppScaffold(appViewModel) { innerPadding ->
+                    Navigation(appViewModel, Modifier.padding(innerPadding))
                 }
             }
         }
