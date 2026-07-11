@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -12,7 +14,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.tvz.kbistrick.ffmediatools.ui.components.MediaPickerBar
 import com.tvz.kbistrick.ffmediatools.ui.theme.AppTheme
+import com.tvz.kbistrick.ffmediatools.ui.theme.Space
 
 /*
 NOTES
@@ -31,8 +35,24 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             AppTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Navigation(Modifier.padding(innerPadding))
+                val appViewModel: AppViewModel = viewModel()
+
+                Scaffold(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .imePadding(),
+                    bottomBar = {
+                        MediaPickerBar(
+                            media = appViewModel.media,
+                            onMediaChange = appViewModel::updateMedia,
+                            modifier = Modifier
+                                .navigationBarsPadding()
+                                .padding(horizontal = Space.M)
+                                .padding(bottom = Space.M)
+                        )
+                    }
+                ) { innerPadding ->
+                    Navigation(appViewModel, Modifier.padding(innerPadding))
                 }
             }
         }
@@ -40,9 +60,8 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Navigation(modifier: Modifier) {
+fun Navigation(appViewModel: AppViewModel, modifier: Modifier) {
     val navController = rememberNavController()
-    val appViewModel: AppViewModel = viewModel()
 
     NavHost(navController, startDestination = "tools") {
         composable("tools") {

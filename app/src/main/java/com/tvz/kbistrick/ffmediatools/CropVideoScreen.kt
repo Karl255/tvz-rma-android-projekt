@@ -34,7 +34,7 @@ import com.tvz.kbistrick.ffmediatools.utils.toggleUnit
 fun CropVideoScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) {
     var shouldAutoPreview by remember {
         mutableStateOf(
-            appViewModel.media?.format?.isVideo?.not() ?: true
+            appViewModel.media?.isVideo?.not() ?: true
         )
     }
     var linkOffsets by remember { mutableStateOf(false) }

@@ -36,6 +36,15 @@ import com.tvz.kbistrick.ffmediatools.ui.components.MediaPreview
 import com.tvz.kbistrick.ffmediatools.ui.theme.AppTheme
 import com.tvz.kbistrick.ffmediatools.ui.theme.Space
 
+val OUTPUT_FORMATS = listOf(
+    MediaFormat.PNG,
+    MediaFormat.JPG,
+    MediaFormat.WEBP,
+    MediaFormat.MP4,
+    MediaFormat.MKV,
+    MediaFormat.WEBM,
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConvertAndCompressScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) {
@@ -82,7 +91,7 @@ fun ConvertAndCompressScreen(appViewModel: AppViewModel, modifier: Modifier = Mo
                 expanded = formatDropdownExpanded,
                 onDismissRequest = { formatDropdownExpanded = false }
             ) {
-                MediaFormat.entries.forEach { format ->
+                OUTPUT_FORMATS.forEach { format ->
                     DropdownMenuItem(
                         text = { Text(format.displayText) },
                         onClick = {

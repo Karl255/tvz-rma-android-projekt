@@ -1,7 +1,13 @@
 package com.tvz.kbistrick.ffmediatools.model
 
+import android.net.Uri
+
 data class MediaInfo(
-    val width: Int,
-    val height: Int,
+    val uri: Uri,
+    val displayName: String?,
+    val mimeType: String?,
+    val width: Int?,
+    val height: Int?,
+    val isVideo: Boolean,
     val format: MediaFormat,
 )
