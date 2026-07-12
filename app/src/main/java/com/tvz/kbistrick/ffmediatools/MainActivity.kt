@@ -106,6 +106,7 @@ fun AppScaffold(
             .imePadding(),
         snackbarHost = {
             MediaPickerBar(
+                pickerLimitation = appViewModel.pickerLimitation,
                 media = appViewModel.media,
                 processedMediaPath = appViewModel.processedMediaPath,
                 onMediaChange = appViewModel::updateMedia,

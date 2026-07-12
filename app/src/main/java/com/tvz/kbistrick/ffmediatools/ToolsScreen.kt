@@ -68,7 +68,7 @@ fun ToolsScreen(
                 "Crop video",
                 R.drawable.pictogram_crop_video,
                 onClick = { onNavigateToTool("cropVideo") },
-                enabled = appViewModel.media?.isVideo?.not() ?: true
+                enabled = appViewModel.media?.isVideo ?: true
             )
         }
     }

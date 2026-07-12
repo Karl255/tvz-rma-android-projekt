@@ -1,6 +1,7 @@
 package com.tvz.kbistrick.ffmediatools
 
 import android.annotation.SuppressLint
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,6 +15,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,6 +46,14 @@ fun CropVideoScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) {
     var right by remember { mutableStateOf(NullableDimensionValue(0, DimensionUnit.PERCENT)) }
 
     val hasMedia = appViewModel.media != null
+
+    DisposableEffect(Unit) {
+        appViewModel.updatePickerLimitation(ActivityResultContracts.PickVisualMedia.VideoOnly)
+
+        onDispose {
+            appViewModel.updatePickerLimitation(null)
+        }
+    }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(Space.M),

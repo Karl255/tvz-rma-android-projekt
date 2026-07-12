@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.VisualMediaType
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,6 +37,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun MediaPickerBar(
+    pickerLimitation: VisualMediaType?,
     media: MediaInfo?,
     processedMediaPath: String?,
     onMediaChange: (MediaInfo?) -> Unit,
@@ -87,7 +89,7 @@ fun MediaPickerBar(
             }
 
             FilledTonalIconButton({
-                pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo))
+                pickMedia.launch(PickVisualMediaRequest(pickerLimitation ?: ActivityResultContracts.PickVisualMedia.ImageAndVideo))
             }) {
                 Icon(Icons.Default.PhotoLibrary, contentDescription = "Pick media")
             }
@@ -115,7 +117,7 @@ private fun mediaDetailsText(media: MediaInfo): String {
 @Composable
 fun MediaPickerBarPreview() {
     val mediaPickerBar = @Composable { mediaInfo: MediaInfo?, processedMediaPath: String? ->
-        MediaPickerBar(mediaInfo, processedMediaPath, {}, {}, {})
+        MediaPickerBar(null, mediaInfo, processedMediaPath, {}, {}, {})
     }
 
     AppTheme {
