@@ -32,6 +32,7 @@ import com.tvz.kbistrick.ffmediatools.model.DimensionUnit
 import com.tvz.kbistrick.ffmediatools.model.DimensionValue
 import com.tvz.kbistrick.ffmediatools.model.MediaFormat
 import com.tvz.kbistrick.ffmediatools.model.MediaInfo
+import com.tvz.kbistrick.ffmediatools.model.NullableDimensionValue
 import com.tvz.kbistrick.ffmediatools.service.FFMpegService
 import com.tvz.kbistrick.ffmediatools.ui.component.AutoPreviewOption
 import com.tvz.kbistrick.ffmediatools.ui.component.DimensionInputField
@@ -39,6 +40,7 @@ import com.tvz.kbistrick.ffmediatools.ui.component.ErrorDialog
 import com.tvz.kbistrick.ffmediatools.ui.component.MediaPreview
 import com.tvz.kbistrick.ffmediatools.ui.theme.AppTheme
 import com.tvz.kbistrick.ffmediatools.ui.theme.Space
+import com.tvz.kbistrick.ffmediatools.util.debounced
 import com.tvz.kbistrick.ffmediatools.util.toggleUnit
 import kotlinx.coroutines.launch
 
@@ -47,18 +49,40 @@ fun ScaleMediaScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) 
     val scope = rememberCoroutineScope()
     var shouldAutoPreview by remember { mutableStateOf(appViewModel.media?.isVideo?.not() ?: true) }
     var linkDimensions by remember { mutableStateOf(true) }
-    var width by remember { mutableStateOf(DimensionValue(100, DimensionUnit.PERCENT)) }
-    var height by remember { mutableStateOf(DimensionValue(100, DimensionUnit.PERCENT)) }
+    var width by remember { mutableStateOf(NullableDimensionValue(100, DimensionUnit.PERCENT)) }
+    var height by remember { mutableStateOf(NullableDimensionValue(100, DimensionUnit.PERCENT)) }
     var error by remember { mutableStateOf<String?>(null) }
 
     val hasMedia = appViewModel.media != null
     val context = LocalContext.current
+
+    val runTool = debounced(ms = 1000, coroutineScope = scope) {
+        val media = appViewModel.media ?: return@debounced
+        val width = width.coalesce() ?: return@debounced
+        val height = height.coalesce() ?: return@debounced
+        appViewModel.updateProcessedMediaPath(null)
+
+        scope.launch {
+            try {
+                FFMpegService.runScalingJob(context, media, width, height)
+            } catch (e: Exception) {
+                Log.e("ScaleMediaScreen", e.message, e)
+                error = e.message
+            }
+        }
+    }
 
     LaunchedEffect(appViewModel.media) {
         val media = appViewModel.media
 
         if (media != null) {
             shouldAutoPreview = !media.isVideo
+        }
+    }
+
+    LaunchedEffect(shouldAutoPreview, width, height) {
+        if (shouldAutoPreview) {
+            runTool()
         }
     }
 
@@ -139,19 +163,7 @@ fun ScaleMediaScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) 
             ExtendedFloatingActionButton(
                 icon = { Icon(Icons.Filled.PlayArrow, contentDescription = "Start process") },
                 text = { Text("Preview") },
-                onClick = {
-                    val media = appViewModel.media ?: return@ExtendedFloatingActionButton
-                    appViewModel.updateProcessedMediaPath(null)
-
-                    scope.launch {
-                        try {
-                            FFMpegService.runScalingJob(context, media, width, height)
-                        } catch (e: Exception) {
-                            Log.e("ScaleMediaScreen", e.message, e)
-                            error = e.message
-                        }
-                    }
-                },
+                onClick = runTool,
                 modifier = Modifier.align(Alignment.End)
             )
         }

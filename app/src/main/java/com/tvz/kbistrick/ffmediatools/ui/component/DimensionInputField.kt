@@ -15,17 +15,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.tvz.kbistrick.ffmediatools.model.DimensionValue
 import com.tvz.kbistrick.ffmediatools.model.DimensionUnit
+import com.tvz.kbistrick.ffmediatools.model.NullableDimensionValue
 import com.tvz.kbistrick.ffmediatools.ui.theme.AppTheme
 import com.tvz.kbistrick.ffmediatools.ui.theme.Space
 import com.tvz.kbistrick.ffmediatools.util.toggleUnit
 
 @Composable
 fun DimensionInputField(
+    value: NullableDimensionValue,
+    onValueChange: (NullableDimensionValue) -> Unit,
     modifier: Modifier = Modifier,
-    value: DimensionValue = DimensionValue(100, DimensionUnit.PERCENT),
-    onValueChange: (DimensionValue) -> Unit = {},
     minValue: Int = 1,
     maxValue: Int? = null,
     pixelsAt100Percent: Int? = null,
@@ -33,14 +33,12 @@ fun DimensionInputField(
     enabled: Boolean = true,
 ) {
     OutlinedTextField(
-        value.number.toString(),
+        value.number?.toString() ?: "",
         onValueChange = {
-            val parsed =
-                if (it.isBlank()) 0
-                else it.trim().toIntOrNull() ?: 0
+            val parsed = it.toIntOrNull()
 
             onValueChange(
-                value.copy(number = parsed.coerceIn(minValue, maxValue ?: Int.MAX_VALUE))
+                value.copy(number = parsed?.coerceIn(minValue, maxValue ?: Int.MAX_VALUE))
             )
 
         },
@@ -73,8 +71,9 @@ fun DimensionInputFieldPreview() {
                 .background(Color.White)
                 .padding(Space.M)
         ) {
-            DimensionInputField(value = DimensionValue(100, DimensionUnit.PERCENT), label = "Label")
-            DimensionInputField(value = DimensionValue(720, DimensionUnit.PIXEL), label = "Label")
+            DimensionInputField(value = NullableDimensionValue(null, DimensionUnit.PERCENT), {}, label = "Label")
+            DimensionInputField(value = NullableDimensionValue(100, DimensionUnit.PERCENT), {}, label = "Label")
+            DimensionInputField(value = NullableDimensionValue(720, DimensionUnit.PIXEL), {}, label = "Label")
         }
     }
 }

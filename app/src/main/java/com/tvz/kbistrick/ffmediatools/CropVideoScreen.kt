@@ -22,7 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.tvz.kbistrick.ffmediatools.model.DimensionUnit
-import com.tvz.kbistrick.ffmediatools.model.DimensionValue
+import com.tvz.kbistrick.ffmediatools.model.NullableDimensionValue
 import com.tvz.kbistrick.ffmediatools.ui.component.AutoPreviewOption
 import com.tvz.kbistrick.ffmediatools.ui.component.DimensionInputField
 import com.tvz.kbistrick.ffmediatools.ui.component.MediaPreview
@@ -38,19 +38,12 @@ fun CropVideoScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) {
         )
     }
     var linkOffsets by remember { mutableStateOf(false) }
-    var top by remember { mutableStateOf(DimensionValue(0, DimensionUnit.PERCENT)) }
-    var bottom by remember { mutableStateOf(DimensionValue(0, DimensionUnit.PERCENT)) }
-    var left by remember { mutableStateOf(DimensionValue(0, DimensionUnit.PERCENT)) }
-    var right by remember { mutableStateOf(DimensionValue(0, DimensionUnit.PERCENT)) }
+    var top by remember { mutableStateOf(NullableDimensionValue(0, DimensionUnit.PERCENT)) }
+    var bottom by remember { mutableStateOf(NullableDimensionValue(0, DimensionUnit.PERCENT)) }
+    var left by remember { mutableStateOf(NullableDimensionValue(0, DimensionUnit.PERCENT)) }
+    var right by remember { mutableStateOf(NullableDimensionValue(0, DimensionUnit.PERCENT)) }
 
     val hasMedia = appViewModel.media != null
-
-    fun setAllOffsets(value: DimensionValue) {
-        top = value
-        bottom = value
-        left = value
-        right = value
-    }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(Space.M),
