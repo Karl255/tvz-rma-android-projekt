@@ -26,7 +26,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.mzgs.ffmpegx.ffmpeg
-import com.tvz.kbistrick.ffmediatools.service.FFMpegJobRunningService
+import com.tvz.kbistrick.ffmediatools.model.Action
 import com.tvz.kbistrick.ffmediatools.ui.component.MediaPickerBar
 import com.tvz.kbistrick.ffmediatools.ui.theme.AppTheme
 import com.tvz.kbistrick.ffmediatools.ui.theme.Space
@@ -40,7 +40,7 @@ class MainActivity : ComponentActivity() {
         ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 0)
 
         lifecycleScope.launch {
-            // automatically initialize and isntall
+            // automatically initialize and install
             ffmpeg()
         }
 
@@ -53,11 +53,11 @@ class MainActivity : ComponentActivity() {
                         override fun onReceive(context: Context?, intent: Intent?) {
                             val action = intent?.action
                             Log.i("MainActivity", "Received broadcast: $action")
-                            if (action == FFMpegJobRunningService.ACTION_JOB_FINISHED) {
-                                val path = intent.getStringExtra(FFMpegJobRunningService.ACTION_JOB_FINISHED_OUTPUT_PATH)
-                                val width = intent.tryGetIntExtra(FFMpegJobRunningService.ACTION_JOB_FINISHED_WIDTH)
-                                val height = intent.tryGetIntExtra(FFMpegJobRunningService.ACTION_JOB_FINISHED_WIDTH)
-                                val thumbnailPath = intent.getStringExtra(FFMpegJobRunningService.ACTION_JOB_FINISHED_THUMBNAIL_PATH)
+                            if (action == Action.JobFinished.ACTION) {
+                                val path = intent.getStringExtra(Action.JobFinished.OUTPUT_PATH)
+                                val width = intent.tryGetIntExtra(Action.JobFinished.WIDTH)
+                                val height = intent.tryGetIntExtra(Action.JobFinished.HEIGHT)
+                                val thumbnailPath = intent.getStringExtra(Action.JobFinished.THUMBNAIL_PATH)
 
                                 Log.i("MainActivity", "Job finished, output: $path ($width*$height) [$thumbnailPath]")
                                 appViewModel.updateProcessedMediaPath(path)
@@ -69,11 +69,12 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    val filter = IntentFilter(FFMpegJobRunningService.ACTION_JOB_FINISHED)
-                    Log.i("MainActivity", "Registering receiver for ${FFMpegJobRunningService.ACTION_JOB_FINISHED}")
-                    
-                    // Use applicationContext for a more stable registration
-                    applicationContext.registerReceiver(receiver, filter, RECEIVER_NOT_EXPORTED)
+                    Log.i("MainActivity", "Registering receiver for ${Action.JobFinished.ACTION}")
+                    applicationContext.registerReceiver(
+                        receiver,
+                        IntentFilter(Action.JobFinished.ACTION),
+                        RECEIVER_NOT_EXPORTED
+                    )
 
                     onDispose {
                         Log.i("MainActivity", "Unregistering receiver")

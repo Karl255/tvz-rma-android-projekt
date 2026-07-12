@@ -14,6 +14,7 @@ import androidx.core.content.PermissionChecker
 import com.mzgs.ffmpegx.FFmpeg
 import com.mzgs.ffmpegx.MediaInformation
 import com.tvz.kbistrick.ffmediatools.R
+import com.tvz.kbistrick.ffmediatools.model.Action
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -21,7 +22,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 class FFMpegJobRunningService : Service() {
-
     private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -34,16 +34,16 @@ class FFMpegJobRunningService : Service() {
         startId: Int
     ): Int {
         when (intent?.action) {
-            Actions.START_WITH_ARGS.toString() -> {
-                val commandArgs = intent.getStringExtra("commandArgs") ?: error("No command arguments provided")
-                val notificationDescription = intent.getStringExtra("notificationDescription")
-                val outputPath = intent.getStringExtra("outputPath") ?: error("No output path provided")
+            Action.StartJob.ACTION -> {
+                val commandArgs = intent.getStringArrayExtra(Action.StartJob.ARGS)?.toList() ?: error("No command arguments provided")
+                val notificationDescription = intent.getStringExtra(Action.StartJob.NOTIFICATION_DESCRIPTION)
+                val outputPath = intent.getStringExtra(Action.StartJob.OUTPUT_PATH) ?: error("No output path provided")
 
                 start(startId, commandArgs, notificationDescription, outputPath)
             }
 
-            Actions.ABORT.toString() -> {
-                Log.i("FFMpegJobRunningService", "Received abort action")
+            Action.AbortJob.ACTION -> {
+                Log.i(TAG, "Received abort action")
                 stopSelf()
             }
         }
@@ -51,7 +51,7 @@ class FFMpegJobRunningService : Service() {
         return START_NOT_STICKY
     }
 
-    private fun start(startId: Int, commandArgs: String, notificationDescription: String?, outputPath: String) {
+    private fun start(startId: Int, commandArgs: List<String>, notificationDescription: String?, outputPath: String) {
         val notification = NotificationCompat.Builder(this, JOB_PROCESSING_NOTIFICATION_CHANNEL)
             .setSmallIcon(R.drawable.app_icon_dark)
             .setContentTitle("Media is processing")
@@ -69,7 +69,7 @@ class FFMpegJobRunningService : Service() {
         val notificationPermission = PermissionChecker.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
 
         if (notificationPermission != PermissionChecker.PERMISSION_GRANTED) {
-            Log.w("FFMpegJobRunningService", "Notification permission not granted")
+            Log.w(TAG, "Notification permission not granted")
         }
 
         val time1 = Calendar.getInstance().time
@@ -77,35 +77,35 @@ class FFMpegJobRunningService : Service() {
 
         serviceScope.launch {
             try {
-                Log.d("FFMpegJobRunningService", "Media processing starting")
-                val isSuccessful = FFmpeg.getInstance().execute(commandArgs)
-                Log.d("FFMpegJobRunningService", "Media processing ended")
+                Log.d(TAG, "Media processing starting")
+                val isSuccessful = FFMpeg.execute(this@FFMpegJobRunningService, commandArgs)
+                Log.d(TAG, "Media processing ended")
 
                 val outputMediaInfo = FFmpeg.getInstance().getMediaInfo(outputPath)
                 if (outputMediaInfo == null) {
-                    Log.e("FFMpegJobRunningService", "Getting processed media info failed")
+                    Log.e(TAG, "Getting processed media info failed")
                 } else {
-                    Log.d("FFMpegJobRunningService", "Getting processed media info success")
+                    Log.d(TAG, "Getting processed media info success")
                 }
 
                 val thumbnailPath = getThumbnail(outputPath)
                 if (thumbnailPath == null) {
-                    Log.e("FFMpegJobRunningService", "Creading thumbnail failed")
+                    Log.e(TAG, "Creading thumbnail failed")
                 } else {
-                    Log.d("FFMpegJobRunningService", "Creading thumbnail success")
+                    Log.d(TAG, "Creading thumbnail success")
                 }
 
                 if (isSuccessful) {
-                    Log.d("FFMpegJobRunningService", "Media processing success")
+                    Log.d(TAG, "Media processing success")
 
                     sendJobFinishedBroadcast(outputPath, outputMediaInfo, thumbnailPath)
                 } else {
                     success = false
-                    Log.e("FFMpegJobRunningService", "FFmpeg execution failed")
+                    Log.e(TAG, "FFmpeg execution failed")
                 }
             } catch (e: Exception) {
                 success = false
-                Log.e("FFMpegJobRunningService", e.message, e)
+                Log.e(TAG, e.message, e)
             } finally {
                 val time2 = Calendar.getInstance().time
                 val duration = time2.time - time1.time
@@ -116,9 +116,11 @@ class FFMpegJobRunningService : Service() {
     }
 
     fun showFinishedNotification(successful: Boolean, durationMs: Long) {
+        val content = if (successful) "Media processing finished" else "Media processing failed"
+
         val notification = NotificationCompat.Builder(this, JOB_FINISHED_NOTIFICATION_CHANNEL)
             .setSmallIcon(R.drawable.app_icon_dark)
-            .setContentTitle(if (successful) "Media processing finished" else "Media processing failed")
+            .setContentTitle(content)
             .setAutoCancel(true)
             .setSilent(durationMs > 5000 || !successful)
             .apply {
@@ -134,21 +136,22 @@ class FFMpegJobRunningService : Service() {
             val notificationPermission = PermissionChecker.checkSelfPermission(this@FFMpegJobRunningService, Manifest.permission.POST_NOTIFICATIONS)
 
             if (notificationPermission != PermissionChecker.PERMISSION_GRANTED) {
-                Log.w("FFMpegJobRunningService", "Notification permission not granted")
+                Log.w(TAG, "Notification permission not granted")
             }
 
+            //Toast.makeText(this@FFMpegJobRunningService, content, Toast.LENGTH_SHORT).show()
             notify(JOB_FINISHED_NOTIFICATION_ID, notification)
         }
     }
 
     fun sendJobFinishedBroadcast(outputPath: String, outputMediaInfo: MediaInformation?, thumbnailPath: String?) {
         sendBroadcast(
-            Intent(ACTION_JOB_FINISHED).apply {
+            Intent(Action.JobFinished.ACTION).apply {
                 setPackage(packageName)
-                putExtra(ACTION_JOB_FINISHED_OUTPUT_PATH, outputPath)
-                outputMediaInfo?.videoStreams[0]?.width?.let { putExtra(ACTION_JOB_FINISHED_WIDTH, it) }
-                outputMediaInfo?.videoStreams[0]?.height?.let { putExtra(ACTION_JOB_FINISHED_HEIGHT, it) }
-                thumbnailPath?.let { putExtra(ACTION_JOB_FINISHED_THUMBNAIL_PATH, it) }
+                putExtra(Action.JobFinished.OUTPUT_PATH, outputPath)
+                outputMediaInfo?.videoStreams[0]?.width?.let { putExtra(Action.JobFinished.WIDTH, it) }
+                outputMediaInfo?.videoStreams[0]?.height?.let { putExtra(Action.JobFinished.HEIGHT, it) }
+                thumbnailPath?.let { putExtra(Action.JobFinished.THUMBNAIL_PATH, it) }
             }
         )
     }
@@ -170,20 +173,13 @@ class FFMpegJobRunningService : Service() {
         serviceScope.cancel()
     }
 
-    enum class Actions {
-        START_WITH_ARGS, ABORT
-    }
-
     companion object {
+        private const val TAG = "FFMpegJobRunningService"
+
         const val JOB_PROCESSING_NOTIFICATION_ID = 1
         const val JOB_PROCESSING_NOTIFICATION_CHANNEL = "job_progress"
         const val JOB_FINISHED_NOTIFICATION_ID = 2
         const val JOB_FINISHED_NOTIFICATION_CHANNEL = "job_finished"
 
-        const val ACTION_JOB_FINISHED = "com.tvz.kbistrick.ffmediatools.ACTION_JOB_FINISHED"
-        const val ACTION_JOB_FINISHED_OUTPUT_PATH = "outputPath"
-        const val ACTION_JOB_FINISHED_WIDTH = "width"
-        const val ACTION_JOB_FINISHED_HEIGHT = "height"
-        const val ACTION_JOB_FINISHED_THUMBNAIL_PATH = "thumbnailPath"
     }
 }

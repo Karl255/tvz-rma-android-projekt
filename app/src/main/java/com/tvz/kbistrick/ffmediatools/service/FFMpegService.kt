@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import com.tvz.kbistrick.ffmediatools.model.Action
 import com.tvz.kbistrick.ffmediatools.model.DimensionUnit
 import com.tvz.kbistrick.ffmediatools.model.DimensionValue
 import com.tvz.kbistrick.ffmediatools.model.MediaInfo
@@ -11,30 +12,37 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 
+// TODO rename to media processing service
 object FFMpegService {
+    private const val TAG = "FFMpegService"
+
     suspend fun runScalingJob(
         context: Context,
         mediaInfo: MediaInfo,
         width: DimensionValue,
         height: DimensionValue
     ) {
-        Log.i("FFMpegService", "Scaling job initiated")
+        Log.i(TAG, "Scaling job initiated")
         val fileName = mediaInfo.fileName
         val input = copyToCache(context, mediaInfo.uri, fileName)
         val output = File(context.cacheDir, input.name.addFilenameSuffix("_s"))
 
-        val (width2, height2) = Pair(width, height).rotate(mediaInfo.rotation ?: 0)
-        val widthParam = width2.toScalingParam("iw")
-        val heightParam = height2.toScalingParam("ih")
-        val commandArgs =
-            """-y -i "${input.absolutePath}" -vf "scale=$widthParam:$heightParam" "${output.absolutePath}""""
+        val widthParam = width.toScalingParam("iw")
+        val heightParam = height.toScalingParam("ih")
+        val commandArgs = listOf(
+            "-y",
+            "-i",
+            input.absolutePath,
+            "-vf",
+            "scale=$widthParam:$heightParam",
+            output.absolutePath
+        )
 
         val intent = Intent(context.applicationContext, FFMpegJobRunningService::class.java).also {
-            it.action = FFMpegJobRunningService.Actions.START_WITH_ARGS.toString()
-            it.putExtra("commandArgs", commandArgs)
-            it.putExtra("inputFilename", input.name)
-            it.putExtra("outputPath", output.absolutePath)
-            it.putExtra("notificationDescription", "Scaling ${if (mediaInfo.isVideo) "video" else "image"}")
+            it.action = Action.StartJob.ACTION
+            it.putExtra(Action.StartJob.ARGS, commandArgs.toTypedArray())
+            it.putExtra(Action.StartJob.OUTPUT_PATH, output.absolutePath)
+            it.putExtra(Action.StartJob.NOTIFICATION_DESCRIPTION, "Scaling ${if (mediaInfo.isVideo) "video" else "image"}")
         }
 
         context.startForegroundService(intent)
@@ -64,13 +72,5 @@ object FFMpegService {
         } else {
             this.substring(0, dotIndex) + suffix + this.substring(dotIndex)
         }
-    }
-
-    private fun <T> Pair<T, T>.rotate(rotation: Int): Pair<T, T> {
-        if (rotation == 90 || rotation == 270) {
-            return Pair(second, first)
-        }
-
-        return this
     }
 }
