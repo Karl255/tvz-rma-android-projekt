@@ -3,6 +3,7 @@ package com.tvz.kbistrick.ffmediatools
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.util.Log
 import com.tvz.kbistrick.ffmediatools.service.FFMpegJobRunningService.Companion.JOB_FINISHED_NOTIFICATION_CHANNEL
 import com.tvz.kbistrick.ffmediatools.service.FFMpegJobRunningService.Companion.JOB_PROCESSING_NOTIFICATION_CHANNEL
 
@@ -29,6 +30,8 @@ class FFToolsApplication : Application() {
                 NotificationManager.IMPORTANCE_DEFAULT
             )
         )
+
+        Log.d("FFToolsApplication", "ffmpeg is located in: ${applicationInfo.nativeLibraryDir}")
     }
 
     private fun clearAppCache() {

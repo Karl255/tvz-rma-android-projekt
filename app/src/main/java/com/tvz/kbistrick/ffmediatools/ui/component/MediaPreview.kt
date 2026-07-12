@@ -1,6 +1,7 @@
 package com.tvz.kbistrick.ffmediatools.ui.component
 
 import android.graphics.BitmapFactory
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +40,7 @@ fun MediaPreview(previewImagePath: String?, previewedMediaSize: Pair<Int, Int>?,
                 .align(Alignment.Center)
         ) {
             if (previewImagePath != null) {
+                Log.d("MediaPreview", "Media preview path: $previewImagePath")
                 val bitmap = remember(previewImagePath) {
                     BitmapFactory.decodeFile(previewImagePath)
                 }
@@ -68,6 +71,7 @@ fun MediaPreview(previewImagePath: String?, previewedMediaSize: Pair<Int, Int>?,
                         )
                     }
                 }
+
             }
         }
 

@@ -20,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlin.time.Clock
 
 class FFMpegJobRunningService : Service() {
     private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
@@ -156,10 +157,22 @@ class FFMpegJobRunningService : Service() {
         )
     }
 
-    private suspend fun getThumbnail(mediaPath: String): String? {
-        val thumbnailPath = "${mediaPath}_THUMB.jpg"
+    private fun getThumbnail(mediaPath: String): String? {
+        val timestamp = Clock.System.now().toEpochMilliseconds()
+        val thumbnailPath = "${mediaPath}_${timestamp}_THUMB.jpg"
 
-        val success = FFmpeg.getInstance().execute("""-i $mediaPath -frames:v 1 -q:v 3 $thumbnailPath""")
+        val success = FFMpeg.execute(
+            this,
+            listOf(
+                "-i",
+                mediaPath,
+                "-frames:v",
+                "1",
+                "-q:v",
+                "3",
+                thumbnailPath
+            )
+        )
 
         return if (success) {
             thumbnailPath

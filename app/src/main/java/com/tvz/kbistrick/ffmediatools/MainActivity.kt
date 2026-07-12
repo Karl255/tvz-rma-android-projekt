@@ -65,6 +65,10 @@ class MainActivity : ComponentActivity() {
                                 if (width != null && height != null) {
                                     appViewModel.updateProcessedMediaSize(width, height)
                                 }
+
+                                if (thumbnailPath != null) {
+                                    appViewModel.updateProcessedMediaPreviewPath(thumbnailPath)
+                                }
                             }
                         }
                     }

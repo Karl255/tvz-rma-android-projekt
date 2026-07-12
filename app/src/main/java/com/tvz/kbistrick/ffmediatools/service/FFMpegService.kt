@@ -35,6 +35,8 @@ object FFMpegService {
             input.absolutePath,
             "-vf",
             "scale=$widthParam:$heightParam",
+            "-b:v",
+            "8M",
             output.absolutePath
         )
 
