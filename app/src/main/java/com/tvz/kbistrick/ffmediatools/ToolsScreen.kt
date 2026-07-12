@@ -2,6 +2,7 @@ package com.tvz.kbistrick.ffmediatools
 
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,16 +22,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.tvz.kbistrick.ffmediatools.model.MediaFormat
+import com.tvz.kbistrick.ffmediatools.model.MediaInfo
 import com.tvz.kbistrick.ffmediatools.ui.theme.AppTheme
 import com.tvz.kbistrick.ffmediatools.ui.theme.Space
 
 @Composable
 fun ToolsScreen(
+    appViewModel: AppViewModel,
     modifier: Modifier = Modifier,
     onNavigateToTool: (toolName: String) -> Unit
 ) {
@@ -62,17 +67,28 @@ fun ToolsScreen(
             ToolCard(
                 "Crop video",
                 R.drawable.pictogram_crop_video,
-                onClick = { onNavigateToTool("cropVideo") }
+                onClick = { onNavigateToTool("cropVideo") },
+                enabled = appViewModel.media?.isVideo?.not() ?: true
             )
         }
     }
 }
 
 @Composable
-fun ToolCard(title: String, @DrawableRes bannerResourceId: Int, onClick: () -> Unit) {
+fun ToolCard(
+    title: String,
+    @DrawableRes bannerResourceId: Int,
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+) {
     // TODO fancier card style, text over image
     OutlinedCard(
-        modifier = Modifier.clickable(true, onClick = onClick)
+        modifier = Modifier
+            .clickable(enabled, onClick = onClick)
+            .let {
+                if (!enabled) it.alpha(0.5f)
+                else it
+            }
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -103,7 +119,59 @@ fun ToolsScreenPreview() {
     val appViewModel = AppViewModel()
     AppTheme {
         AppScaffold(appViewModel) { innerPadding ->
-            ToolsScreen(onNavigateToTool = {}, modifier = Modifier.padding(innerPadding))
+            ToolsScreen(appViewModel, onNavigateToTool = {}, modifier = Modifier.padding(innerPadding))
+        }
+    }
+}
+
+@SuppressLint("ViewModelConstructorInComposable")
+@Preview(showBackground = true)
+@Composable
+fun ToolsScreenForImagePreview() {
+    val appViewModel = AppViewModel().apply {
+        updateMedia(
+            MediaInfo(
+                uri = Uri.EMPTY,
+                fileName = "sample.png",
+                mimeType = "image/png",
+                width = 1920,
+                height = 1080,
+                rotation = null,
+                isVideo = false,
+                format = MediaFormat.PNG
+            )
+        )
+    }
+
+    AppTheme {
+        AppScaffold(appViewModel) { innerPadding ->
+            ToolsScreen(appViewModel, onNavigateToTool = {}, modifier = Modifier.padding(innerPadding))
+        }
+    }
+}
+
+@SuppressLint("ViewModelConstructorInComposable")
+@Preview(showBackground = true)
+@Composable
+fun ToolsScreenForVideoPreview() {
+    val appViewModel = AppViewModel().apply {
+        updateMedia(
+            MediaInfo(
+                uri = Uri.EMPTY,
+                fileName = "sample.mp4",
+                mimeType = "video/mp4",
+                width = 1920,
+                height = 1080,
+                rotation = null,
+                isVideo = true,
+                format = MediaFormat.MP4
+            )
+        )
+    }
+
+    AppTheme {
+        AppScaffold(appViewModel) { innerPadding ->
+            ToolsScreen(appViewModel, onNavigateToTool = {}, modifier = Modifier.padding(innerPadding))
         }
     }
 }

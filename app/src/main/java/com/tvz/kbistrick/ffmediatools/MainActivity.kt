@@ -127,7 +127,7 @@ fun Navigation(appViewModel: AppViewModel, modifier: Modifier = Modifier) {
 
     NavHost(navController, startDestination = "tools") {
         composable("tools") {
-            ToolsScreen(modifier, onNavigateToTool = { toolName -> navController.navigate("tools/${toolName}") })
+            ToolsScreen(appViewModel, modifier, onNavigateToTool = { toolName -> navController.navigate("tools/${toolName}") })
         }
 
         composable("tools/scaleMedia") {
