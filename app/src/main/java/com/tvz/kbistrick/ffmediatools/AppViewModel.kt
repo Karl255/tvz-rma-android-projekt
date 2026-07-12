@@ -14,6 +14,10 @@ class AppViewModel : ViewModel() {
     var processedMediaPath by mutableStateOf<String?>(null)
         private set
 
+    var processedMediaSize by mutableStateOf<Pair<Int, Int>?>(null)
+
+    var processedMediaPreviewPath by mutableStateOf<String?>(null)
+
     fun updateMedia(mediaInfo: MediaInfo?) {
         media = mediaInfo
         Log.d("AppViewModel", "Updated media: $mediaInfo")
@@ -24,8 +28,21 @@ class AppViewModel : ViewModel() {
         Log.d("AppViewModel", "Updated processedMediaPath: $path")
     }
 
+    fun updateProcessedMediaSize(width: Int, height: Int) {
+        processedMediaSize = width to height
+        Log.d("AppViewModel", "Updated processedMediaSize: $width x $height")
+    }
+
+    fun updateProcessedMediaPreviewPath(path: String?) {
+        processedMediaPreviewPath = path
+        Log.d("AppViewModel", "Updated processedMediaPreviewPath: $path")
+    }
+
     fun clearAllMedia() {
-        updateMedia(null)
-        updateProcessedMediaPath(null)
+        media = null
+        processedMediaPath = null
+        processedMediaSize = null
+        processedMediaPreviewPath = null
+
     }
 }

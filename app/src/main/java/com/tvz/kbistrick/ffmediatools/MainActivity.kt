@@ -31,6 +31,7 @@ import com.tvz.kbistrick.ffmediatools.ui.component.MediaPickerBar
 import com.tvz.kbistrick.ffmediatools.ui.theme.AppTheme
 import com.tvz.kbistrick.ffmediatools.ui.theme.Space
 import com.tvz.kbistrick.ffmediatools.util.saveToGallery
+import com.tvz.kbistrick.ffmediatools.util.tryGetIntExtra
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -53,9 +54,17 @@ class MainActivity : ComponentActivity() {
                             val action = intent?.action
                             Log.i("MainActivity", "Received broadcast: $action")
                             if (action == FFMpegJobRunningService.ACTION_JOB_FINISHED) {
-                                val path = intent.getStringExtra(FFMpegJobRunningService.EXTRA_OUTPUT_PATH)
-                                Log.i("MainActivity", "Job finished, output path: $path")
+                                val path = intent.getStringExtra(FFMpegJobRunningService.ACTION_JOB_FINISHED_OUTPUT_PATH)
+                                val width = intent.tryGetIntExtra(FFMpegJobRunningService.ACTION_JOB_FINISHED_WIDTH)
+                                val height = intent.tryGetIntExtra(FFMpegJobRunningService.ACTION_JOB_FINISHED_WIDTH)
+                                val thumbnailPath = intent.getStringExtra(FFMpegJobRunningService.ACTION_JOB_FINISHED_THUMBNAIL_PATH)
+
+                                Log.i("MainActivity", "Job finished, output: $path ($width*$height) [$thumbnailPath]")
                                 appViewModel.updateProcessedMediaPath(path)
+
+                                if (width != null && height != null) {
+                                    appViewModel.updateProcessedMediaSize(width, height)
+                                }
                             }
                         }
                     }

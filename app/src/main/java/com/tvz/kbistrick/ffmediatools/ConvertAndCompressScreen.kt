@@ -57,7 +57,10 @@ fun ConvertAndCompressScreen(appViewModel: AppViewModel, modifier: Modifier = Mo
             modifier = Modifier.fillMaxWidth()
         )
 
-        MediaPreview()
+        MediaPreview(
+            previewImagePath = appViewModel.processedMediaPreviewPath,
+            previewedMediaSize = appViewModel.processedMediaSize,
+        )
 
         AutoPreviewOption(shouldAutoPreview, { shouldAutoPreview = it }, enabled = hasMedia)
 

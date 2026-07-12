@@ -74,7 +74,13 @@ fun ScaleMediaScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) 
             modifier = Modifier.fillMaxWidth()
         )
 
-        MediaPreview()
+        MediaPreview(
+            previewImagePath = appViewModel.processedMediaPreviewPath,
+            previewedMediaSize = appViewModel.processedMediaSize,
+            infoText = appViewModel.processedMediaSize?.let {
+                "${it.first}x${it.second}"
+            }
+        )
 
         AutoPreviewOption(shouldAutoPreview, { shouldAutoPreview = it }, enabled = hasMedia)
 
@@ -176,7 +182,6 @@ fun ScaleMediaScreenPreview() {
 
         updateProcessedMediaPath("foo")
     }
-
 
     AppTheme {
         AppScaffold(appViewModel) { innerPadding ->

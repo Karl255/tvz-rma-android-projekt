@@ -21,3 +21,5 @@ fun DimensionValue.toggleUnit(pixelsAt100Percent: Int?): DimensionValue {
         )
     }
 }
+
+fun Pair<Int, Int>.toAspectRatio() = first.toFloat() / second
