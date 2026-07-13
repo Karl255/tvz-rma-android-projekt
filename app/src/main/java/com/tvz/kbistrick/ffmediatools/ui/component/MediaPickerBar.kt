@@ -6,9 +6,11 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.VisualMediaType
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -28,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.tvz.kbistrick.ffmediatools.model.MediaFormat
 import com.tvz.kbistrick.ffmediatools.model.MediaInfo
 import com.tvz.kbistrick.ffmediatools.ui.theme.AppTheme
@@ -101,6 +104,11 @@ fun MediaPickerBar(
             }
         }
     }
+}
+
+@Composable
+fun MediaPickerBarGutter() {
+    Box(modifier = Modifier.height(72.dp)) {}
 }
 
 private fun mediaDetailsText(media: MediaInfo): String {

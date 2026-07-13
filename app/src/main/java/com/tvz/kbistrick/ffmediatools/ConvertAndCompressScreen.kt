@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.DropdownMenuItem
@@ -39,6 +41,7 @@ import com.tvz.kbistrick.ffmediatools.model.VideoCodec
 import com.tvz.kbistrick.ffmediatools.service.FFMpegService
 import com.tvz.kbistrick.ffmediatools.ui.component.AutoPreviewOption
 import com.tvz.kbistrick.ffmediatools.ui.component.ErrorDialog
+import com.tvz.kbistrick.ffmediatools.ui.component.MediaPickerBarGutter
 import com.tvz.kbistrick.ffmediatools.ui.component.MediaPreview
 import com.tvz.kbistrick.ffmediatools.ui.theme.AppTheme
 import com.tvz.kbistrick.ffmediatools.ui.theme.Space
@@ -119,6 +122,7 @@ fun ConvertAndCompressScreen(appViewModel: AppViewModel, modifier: Modifier = Mo
         verticalArrangement = Arrangement.spacedBy(Space.M),
         modifier = modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(Space.M)
     ) {
         Text(
@@ -220,6 +224,8 @@ fun ConvertAndCompressScreen(appViewModel: AppViewModel, modifier: Modifier = Mo
                 modifier = Modifier.align(Alignment.End)
             )
         }
+
+        MediaPickerBarGutter()
     }
 
     error?.let {

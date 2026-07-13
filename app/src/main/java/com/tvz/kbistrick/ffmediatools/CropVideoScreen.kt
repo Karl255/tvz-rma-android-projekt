@@ -37,6 +37,7 @@ import com.tvz.kbistrick.ffmediatools.service.FFMpegService
 import com.tvz.kbistrick.ffmediatools.ui.component.AutoPreviewOption
 import com.tvz.kbistrick.ffmediatools.ui.component.DimensionInputField
 import com.tvz.kbistrick.ffmediatools.ui.component.ErrorDialog
+import com.tvz.kbistrick.ffmediatools.ui.component.MediaPickerBarGutter
 import com.tvz.kbistrick.ffmediatools.ui.component.MediaPreview
 import com.tvz.kbistrick.ffmediatools.ui.theme.AppTheme
 import com.tvz.kbistrick.ffmediatools.ui.theme.Space
@@ -193,6 +194,8 @@ fun CropVideoScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) {
                     enabled = hasMedia && !linkOffsets,
                 )
             }
+
+            MediaPickerBarGutter()
         }
 
         if (hasMedia) {
