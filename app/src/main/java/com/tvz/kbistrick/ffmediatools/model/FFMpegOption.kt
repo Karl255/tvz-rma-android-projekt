@@ -19,7 +19,7 @@ import androidx.compose.ui.Modifier
 
 interface FFMpegOption {
     @Composable
-    fun Render()
+    fun Render(onValueChange: () -> Unit)
 
     fun toArgs(): List<String>
 }
@@ -32,7 +32,7 @@ abstract class EnumOption(defaultOption: Option?) : FFMpegOption {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    override fun Render() {
+    override fun Render(onValueChange: () -> Unit) {
         var expanded by remember { mutableStateOf(false) }
 
         ExposedDropdownMenuBox(
@@ -61,6 +61,7 @@ abstract class EnumOption(defaultOption: Option?) : FFMpegOption {
                         onClick = {
                             selectedOption = option
                             expanded = false
+                            onValueChange()
                         }
                     )
                 }

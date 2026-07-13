@@ -10,5 +10,5 @@ data class MediaInfo(
     val height: Int?,
     val rotation: Int?,
     val isVideo: Boolean,
-    val format: MediaFormat,
+    val format: MediaFormat?,
 )

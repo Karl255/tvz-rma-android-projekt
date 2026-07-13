@@ -108,7 +108,7 @@ private fun mediaDetailsText(media: MediaInfo): String {
         if (media.width != null && media.height != null) "${media.width} × ${media.height}"
         else null
 
-    val format = media.format.displayText
+    val format = media.format?.displayText ?: if(media.isVideo) "Unknown video format" else "Unknown image format"
 
     return listOfNotNull(dimensions, format).joinToString(" · ")
 }
@@ -150,7 +150,7 @@ fun MediaPickerBarPreview() {
                     270,
                     null,
                     false,
-                    MediaFormat.UNKNOWN_VIDEO
+                    null
                 ),
                 null,
             )
@@ -164,7 +164,7 @@ fun MediaPickerBarPreview() {
                     270,
                     null,
                     false,
-                    MediaFormat.UNKNOWN_VIDEO
+                    null
                 ),
                 "something",
             )

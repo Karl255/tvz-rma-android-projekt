@@ -7,7 +7,9 @@ import android.util.Log
 import com.tvz.kbistrick.ffmediatools.model.Action
 import com.tvz.kbistrick.ffmediatools.model.DimensionUnit
 import com.tvz.kbistrick.ffmediatools.model.DimensionValue
+import com.tvz.kbistrick.ffmediatools.model.MediaFormat
 import com.tvz.kbistrick.ffmediatools.model.MediaInfo
+import com.tvz.kbistrick.ffmediatools.model.VideoCodec
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -91,6 +93,37 @@ object FFMpegService {
         context.startForegroundService(intent)
     }
 
+    suspend fun runConversionJob(
+        context: Context,
+        mediaInfo: MediaInfo,
+        outputFormat: MediaFormat,
+        videoCodec: VideoCodec?,
+        options: List<String>,
+    ) {
+        Log.i(TAG, "Conversion job initiated")
+        val fileName = mediaInfo.fileName
+        val input = copyToCache(context, mediaInfo.uri, fileName)
+        val output = File(context.cacheDir, input.name.changeExtension("_c", outputFormat.fileExtension))
+
+        val commandArgs = listOf(
+            "-y",
+            "-hide_banner",
+            "-i",
+            input.absolutePath,
+            *options.toTypedArray(),
+            output.absolutePath
+        )
+
+        val intent = Intent(context.applicationContext, FFMpegJobRunningService::class.java).also {
+            it.action = Action.StartJob.ACTION
+            it.putExtra(Action.StartJob.ARGS, commandArgs.toTypedArray())
+            it.putExtra(Action.StartJob.OUTPUT_PATH, output.absolutePath)
+            it.putExtra(Action.StartJob.NOTIFICATION_DESCRIPTION, "Scaling ${if (mediaInfo.isVideo) "video" else "image"}")
+        }
+
+        context.startForegroundService(intent)
+    }
+
     private suspend fun copyToCache(context: Context, uri: Uri, fileName: String): File {
         return withContext(Dispatchers.IO) {
             val file = File(context.cacheDir, fileName)
@@ -115,5 +148,12 @@ object FFMpegService {
         } else {
             this.substring(0, dotIndex) + suffix + this.substring(dotIndex)
         }
+    }
+
+    private fun String.changeExtension(suffix: String, newExtension: String): String {
+        val dotIndex = this.lastIndexOf('.')
+        val name = if (dotIndex == -1) this else this.substring(0, dotIndex)
+
+        return "$name$suffix.$newExtension"
     }
 }

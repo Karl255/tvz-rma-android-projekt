@@ -26,7 +26,7 @@ suspend fun loadMediaInfo(context: Context, uri: Uri): MediaInfo = withContext(D
         height = height,
         rotation = rotation,
         isVideo = isVideo,
-        format = MediaFormat.fromMimeType(mimeType, isVideo),
+        format = MediaFormat.fromMimeType(mimeType),
     )
 }
 
