@@ -78,6 +78,7 @@ fun ConvertAndCompressScreen(appViewModel: AppViewModel, modifier: Modifier = Mo
     var ffmpegOptionsChangedKey by remember { mutableLongStateOf(0L) }
 
     val hasMedia = appViewModel.media != null
+    // TODO areOptionsValid flag
 
     val runTool = debounced(ms = 1000, coroutineScope = scope) {
         val media = appViewModel.media ?: return@debounced
@@ -160,7 +161,7 @@ fun ConvertAndCompressScreen(appViewModel: AppViewModel, modifier: Modifier = Mo
                             onClick = {
                                 selectedFormat = format
                                 if (!format.isVideo) ffmpegOptions = format.optionInits.map { it() }
-                                availableVideoCodecs = VideoCodec.allForFormat(format)
+                                availableVideoCodecs = VideoCodec.allForFormat(format).filter { it.supportsEncode }
                                 selectedVideoCodec = null
                                 formatDropdownExpanded = false
                             }

@@ -21,6 +21,7 @@ abstract class EnumOption(defaultOption: Option?) : FFMpegOption {
     protected abstract val LABEL: String
     protected abstract val KEY: String
     protected abstract val OPTIONS: List<Option>
+    protected abstract val REQUIRED: Boolean
 
     protected var selectedOption: Option? = defaultOption
 
@@ -38,7 +39,7 @@ abstract class EnumOption(defaultOption: Option?) : FFMpegOption {
                 onValueChange = {},
                 readOnly = true,
                 singleLine = true,
-                label = { Text(LABEL) },
+                label = { Text(if (REQUIRED) LABEL else "$LABEL (optional)") },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
                 modifier = Modifier
                     .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
