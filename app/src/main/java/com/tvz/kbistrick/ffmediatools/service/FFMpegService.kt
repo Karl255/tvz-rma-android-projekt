@@ -10,6 +10,7 @@ import com.tvz.kbistrick.ffmediatools.model.DimensionValue
 import com.tvz.kbistrick.ffmediatools.model.MediaFormat
 import com.tvz.kbistrick.ffmediatools.model.MediaInfo
 import com.tvz.kbistrick.ffmediatools.model.VideoCodec
+import com.tvz.kbistrick.ffmediatools.model.ffmpegoption.FFMpegOption
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -98,7 +99,7 @@ object FFMpegService {
         mediaInfo: MediaInfo,
         outputFormat: MediaFormat,
         videoCodec: VideoCodec?,
-        options: List<String>,
+        options: List<FFMpegOption>,
     ) {
         Log.i(TAG, "Conversion job initiated")
         val fileName = mediaInfo.fileName
@@ -110,7 +111,7 @@ object FFMpegService {
             "-hide_banner",
             "-i",
             input.absolutePath,
-            *options.toTypedArray(),
+            *options.flatMap { it.toArgs() }.toTypedArray(),
             output.absolutePath
         )
 

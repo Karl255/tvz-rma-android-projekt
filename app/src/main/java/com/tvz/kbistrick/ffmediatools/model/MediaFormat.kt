@@ -8,14 +8,14 @@ enum class MediaFormat(
     val displayText: String,
     val fileExtension: String,
     val isVideo: Boolean,
-    val optionInits: List<() -> FFMpegOption>
+    val optionInits: List<() -> FFMpegOption> = emptyList(),
 ) {
-    PNG("PNG", "png", false, emptyList()),
+    PNG("PNG", "png", false),
     JPG("JPG", "jpg", false, listOf(JpegQualityOption::init)),
     WEBP("WEBP", "webp", false, listOf(WebpQualityOption::init)),
-    MP4("MP4", "mp4", true, emptyList()),
-    MKV("MKV", "mkv", true, emptyList()),
-    WEBM("WEBM", "webm", true, emptyList());
+    MP4("MP4", "mp4", true),
+    MKV("MKV", "mkv", true),
+    WEBM("WEBM", "webm", true);
 
     companion object {
         fun fromMimeType(mimeType: String?): MediaFormat? = when (mimeType) {

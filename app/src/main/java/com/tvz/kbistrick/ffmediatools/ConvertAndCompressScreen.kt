@@ -35,6 +35,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.tvz.kbistrick.ffmediatools.model.ffmpegoption.FFMpegOption
 import com.tvz.kbistrick.ffmediatools.model.MediaFormat
 import com.tvz.kbistrick.ffmediatools.model.MediaInfo
+import com.tvz.kbistrick.ffmediatools.model.VideoCodec
 import com.tvz.kbistrick.ffmediatools.service.FFMpegService
 import com.tvz.kbistrick.ffmediatools.ui.component.AutoPreviewOption
 import com.tvz.kbistrick.ffmediatools.ui.component.ErrorDialog
@@ -68,6 +69,9 @@ fun ConvertAndCompressScreen(appViewModel: AppViewModel, modifier: Modifier = Mo
     var formatDropdownExpanded by remember { mutableStateOf(false) }
     var availableFormats by remember { mutableStateOf(getFormatsList(appViewModel.media?.isVideo)) }
     var selectedFormat by remember { mutableStateOf<MediaFormat?>(null) }
+    var codecDropdownExpanded by remember { mutableStateOf(false) }
+    var availableVideoCodecs by remember { mutableStateOf<List<VideoCodec>>(emptyList()) }
+    var selectedVideoCodec by remember { mutableStateOf<VideoCodec?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
 
     var ffmpegOptions by remember { mutableStateOf<List<FFMpegOption>>(emptyList()) }
@@ -78,17 +82,14 @@ fun ConvertAndCompressScreen(appViewModel: AppViewModel, modifier: Modifier = Mo
     val runTool = debounced(ms = 1000, coroutineScope = scope) {
         val media = appViewModel.media ?: return@debounced
         val selectedFormat = selectedFormat ?: return@debounced
+        val selectedVideoCodec = if (selectedFormat.isVideo) selectedVideoCodec ?: return@debounced else null
 
-        if (!ffmpegOptions.all { it.isValid() }) {
-            Log.d("ConvertAndCompressScreen", "Some option is invalid")
-            return@debounced
-        }
+        if (!ffmpegOptions.all { it.isValid() }) return@debounced
 
-        val options = ffmpegOptions.flatMap { it.toArgs() }
         appViewModel.updateProcessedMediaPath(null)
 
         try {
-            FFMpegService.runConversionJob(context, media, selectedFormat, null, options)
+            FFMpegService.runConversionJob(context, media, selectedFormat, selectedVideoCodec, ffmpegOptions)
         } catch (e: Exception) {
             Log.e("ScaleMediaScreen", e.message, e)
             error = e.message
@@ -142,12 +143,11 @@ fun ConvertAndCompressScreen(appViewModel: AppViewModel, modifier: Modifier = Mo
                     onValueChange = {},
                     readOnly = true,
                     singleLine = true,
-                    label = { Text("Ouput format") },
+                    label = { Text("Output format") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(formatDropdownExpanded) },
                     modifier = Modifier
                         .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
                         .fillMaxWidth(),
-                    enabled = hasMedia
                 )
 
                 ExposedDropdownMenu(
@@ -159,8 +159,45 @@ fun ConvertAndCompressScreen(appViewModel: AppViewModel, modifier: Modifier = Mo
                             text = { Text(format.displayText) },
                             onClick = {
                                 selectedFormat = format
-                                ffmpegOptions = format.optionInits.map { it() }
+                                if (!format.isVideo) ffmpegOptions = format.optionInits.map { it() }
+                                availableVideoCodecs = VideoCodec.allForFormat(format)
+                                selectedVideoCodec = null
                                 formatDropdownExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+        }
+
+        if (appViewModel.media?.isVideo == true && availableVideoCodecs.isNotEmpty()) {
+            ExposedDropdownMenuBox(
+                expanded = codecDropdownExpanded,
+                onExpandedChange = { codecDropdownExpanded = it }
+            ) {
+                OutlinedTextField(
+                    value = selectedVideoCodec?.displayText ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    singleLine = true,
+                    label = { Text("Video codec") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(codecDropdownExpanded) },
+                    modifier = Modifier
+                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+                        .fillMaxWidth(),
+                )
+
+                ExposedDropdownMenu(
+                    expanded = codecDropdownExpanded,
+                    onDismissRequest = { codecDropdownExpanded = false }
+                ) {
+                    availableVideoCodecs.forEach { codec ->
+                        DropdownMenuItem(
+                            text = { Text(codec.displayText) },
+                            onClick = {
+                                selectedVideoCodec = codec
+                                ffmpegOptions = codec.optionInits.map { it() }
+                                codecDropdownExpanded = false
                             }
                         )
                     }
