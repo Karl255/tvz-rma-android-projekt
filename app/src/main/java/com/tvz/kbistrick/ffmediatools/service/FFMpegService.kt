@@ -27,14 +27,55 @@ object FFMpegService {
         val input = copyToCache(context, mediaInfo.uri, fileName)
         val output = File(context.cacheDir, input.name.addFilenameSuffix("_s"))
 
-        val widthParam = width.toScalingParam("iw")
-        val heightParam = height.toScalingParam("ih")
+        val widthParam = width.toRelativeParam("iw")
+        val heightParam = height.toRelativeParam("ih")
         val commandArgs = listOf(
             "-y",
+            "-hide_banner",
             "-i",
             input.absolutePath,
             "-vf",
             "scale=$widthParam:$heightParam",
+            "-b:v",
+            "8M",
+            output.absolutePath
+        )
+
+        val intent = Intent(context.applicationContext, FFMpegJobRunningService::class.java).also {
+            it.action = Action.StartJob.ACTION
+            it.putExtra(Action.StartJob.ARGS, commandArgs.toTypedArray())
+            it.putExtra(Action.StartJob.OUTPUT_PATH, output.absolutePath)
+            it.putExtra(Action.StartJob.NOTIFICATION_DESCRIPTION, "Scaling ${if (mediaInfo.isVideo) "video" else "image"}")
+        }
+
+        context.startForegroundService(intent)
+    }
+
+    suspend fun runCropVideoJob(
+        context: Context,
+        mediaInfo: MediaInfo,
+        top: DimensionValue,
+        bottom: DimensionValue,
+        left: DimensionValue,
+        right: DimensionValue,
+    ) {
+        Log.i(TAG, "Crop video job initiated")
+        val fileName = mediaInfo.fileName
+        val input = copyToCache(context, mediaInfo.uri, fileName)
+        val output = File(context.cacheDir, input.name.addFilenameSuffix("_s"))
+
+        val x = left.toRelativeParam("in_w")
+        val width = "in_w-${left.toRelativeParam("in_w")}-${right.toRelativeParam("in_w")}"
+        val y = top.toRelativeParam("in_w")
+        val height = "in_h-${top.toRelativeParam("in_h")}-${bottom.toRelativeParam("in_h")}"
+
+        val commandArgs = listOf(
+            "-y",
+            "-hide_banner",
+            "-i",
+            input.absolutePath,
+            "-vf",
+            "crop=$width:$height:$x:$y",
             "-b:v",
             "8M",
             output.absolutePath
@@ -62,9 +103,9 @@ object FFMpegService {
         }
     }
 
-    private fun DimensionValue.toScalingParam(coefficientForPercentage: String) = when (unit) {
+    private fun DimensionValue.toRelativeParam(coefficientForPercentage: String) = when (unit) {
         DimensionUnit.PIXEL -> "$number"
-        DimensionUnit.PERCENT -> "$coefficientForPercentage*${number/100f}"
+        DimensionUnit.PERCENT -> "${number / 100f}*$coefficientForPercentage"
     }
 
     private fun String.addFilenameSuffix(suffix: String): String {

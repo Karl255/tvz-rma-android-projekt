@@ -46,7 +46,9 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun ScaleMediaScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
+
     var shouldAutoPreview by remember { mutableStateOf(appViewModel.media?.isVideo?.not() ?: true) }
     var linkDimensions by remember { mutableStateOf(true) }
     var width by remember { mutableStateOf(NullableDimensionValue(100, DimensionUnit.PERCENT)) }
@@ -54,7 +56,6 @@ fun ScaleMediaScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) 
     var error by remember { mutableStateOf<String?>(null) }
 
     val hasMedia = appViewModel.media != null
-    val context = LocalContext.current
 
     val runTool = debounced(ms = 1000, coroutineScope = scope) {
         val media = appViewModel.media ?: return@debounced
@@ -62,13 +63,11 @@ fun ScaleMediaScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) 
         val height = height.coalesce() ?: return@debounced
         appViewModel.updateProcessedMediaPath(null)
 
-        scope.launch {
-            try {
-                FFMpegService.runScalingJob(context, media, width, height)
-            } catch (e: Exception) {
-                Log.e("ScaleMediaScreen", e.message, e)
-                error = e.message
-            }
+        try {
+            FFMpegService.runScalingJob(context, media, width, height)
+        } catch (e: Exception) {
+            Log.e("ScaleMediaScreen", e.message, e)
+            error = e.message
         }
     }
 
@@ -167,10 +166,10 @@ fun ScaleMediaScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) 
                 modifier = Modifier.align(Alignment.End)
             )
         }
+    }
 
-        error?.let {
-            ErrorDialog(it, { error = null })
-        }
+    error?.let {
+        ErrorDialog(it, { error = null })
     }
 }
 
@@ -191,8 +190,6 @@ fun ScaleMediaScreenPreview() {
                 format = MediaFormat.MP4
             )
         )
-
-        updateProcessedMediaPath("foo")
     }
 
     AppTheme {

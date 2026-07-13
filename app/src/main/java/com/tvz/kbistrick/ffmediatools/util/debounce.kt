@@ -13,7 +13,7 @@ import kotlin.time.Duration.Companion.milliseconds
 fun debounced(
     ms: Long,
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
-    func: () -> Unit,
+    func: suspend CoroutineScope.() -> Unit,
 ): () -> Unit {
     return remember {
         var job: Job? = null
