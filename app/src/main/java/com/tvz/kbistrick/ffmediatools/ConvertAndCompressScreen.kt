@@ -1,6 +1,7 @@
 package com.tvz.kbistrick.ffmediatools
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,22 +16,28 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.tvz.kbistrick.ffmediatools.model.FFMpegOption
 import com.tvz.kbistrick.ffmediatools.model.MediaFormat
+import com.tvz.kbistrick.ffmediatools.model.MediaInfo
 import com.tvz.kbistrick.ffmediatools.ui.component.AutoPreviewOption
 import com.tvz.kbistrick.ffmediatools.ui.component.MediaPreview
 import com.tvz.kbistrick.ffmediatools.ui.theme.AppTheme
 import com.tvz.kbistrick.ffmediatools.ui.theme.Space
 
-val OUTPUT_FORMATS = listOf(
+val IMAGE_FORMATS = listOf(
     MediaFormat.PNG,
     MediaFormat.JPG,
     MediaFormat.WEBP,
+)
+
+val VIDEO_FORMATS = listOf(
     MediaFormat.MP4,
     MediaFormat.MKV,
     MediaFormat.WEBM,
@@ -39,11 +46,30 @@ val OUTPUT_FORMATS = listOf(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConvertAndCompressScreen(appViewModel: AppViewModel, modifier: Modifier = Modifier) {
-    var shouldAutoPreview by remember { mutableStateOf(true) }
+    //val context = LocalContext.current
+    //val scope = rememberCoroutineScope()
+
+    var shouldAutoPreview by remember { mutableStateOf(appViewModel.media?.isVideo?.not() ?: true) }
+
     var formatDropdownExpanded by remember { mutableStateOf(false) }
-    var selectedFormat by remember { mutableStateOf(MediaFormat.PNG) }
+    var availableFormats by remember { mutableStateOf(getFormatsList(appViewModel.media?.isVideo)) }
+    var selectedFormat by remember { mutableStateOf<MediaFormat?>(null) }
+
+    var ffmpegOptions by remember { mutableStateOf<List<FFMpegOption>>(emptyList()) }
 
     val hasMedia = appViewModel.media != null
+
+    LaunchedEffect(appViewModel.media) {
+        val media = appViewModel.media
+
+        if (media != null) {
+            shouldAutoPreview = !media.isVideo
+        }
+    }
+
+    LaunchedEffect(appViewModel.media?.isVideo) {
+        availableFormats = getFormatsList(appViewModel.media?.isVideo)
+    }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(Space.M),
@@ -64,37 +90,44 @@ fun ConvertAndCompressScreen(appViewModel: AppViewModel, modifier: Modifier = Mo
 
         AutoPreviewOption(shouldAutoPreview, { shouldAutoPreview = it }, enabled = hasMedia)
 
-        ExposedDropdownMenuBox(
-            expanded = formatDropdownExpanded,
-            onExpandedChange = { formatDropdownExpanded = it }
-        ) {
-            OutlinedTextField(
-                value = selectedFormat.displayText,
-                onValueChange = {},
-                readOnly = true,
-                singleLine = true,
-                label = { Text("Format") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(formatDropdownExpanded) },
-                modifier = Modifier
-                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
-                    .fillMaxWidth(),
-                enabled = hasMedia
-            )
-
-            ExposedDropdownMenu(
+        if (availableFormats.isNotEmpty()) {
+            ExposedDropdownMenuBox(
                 expanded = formatDropdownExpanded,
-                onDismissRequest = { formatDropdownExpanded = false }
+                onExpandedChange = { formatDropdownExpanded = it }
             ) {
-                OUTPUT_FORMATS.forEach { format ->
-                    DropdownMenuItem(
-                        text = { Text(format.displayText) },
-                        onClick = {
-                            selectedFormat = format
-                            formatDropdownExpanded = false
-                        }
-                    )
+                OutlinedTextField(
+                    value = selectedFormat?.displayText ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    singleLine = true,
+                    label = { Text("Ouput format") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(formatDropdownExpanded) },
+                    modifier = Modifier
+                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+                        .fillMaxWidth(),
+                    enabled = hasMedia
+                )
+
+                ExposedDropdownMenu(
+                    expanded = formatDropdownExpanded,
+                    onDismissRequest = { formatDropdownExpanded = false }
+                ) {
+                    availableFormats.forEach { format ->
+                        DropdownMenuItem(
+                            text = { Text(format.displayText) },
+                            onClick = {
+                                selectedFormat = format
+                                ffmpegOptions = format.optionInits.map { it() }
+                                formatDropdownExpanded = false
+                            }
+                        )
+                    }
                 }
             }
+        }
+
+        ffmpegOptions.forEach { ffmpegOption ->
+            ffmpegOption.Render()
         }
     }
 }
@@ -103,10 +136,30 @@ fun ConvertAndCompressScreen(appViewModel: AppViewModel, modifier: Modifier = Mo
 @Preview(showBackground = true)
 @Composable
 fun ConvertAndCompressScreenPreview() {
-    val appViewModel = AppViewModel()
+    val appViewModel = AppViewModel().apply {
+        updateMedia(
+            MediaInfo(
+                uri = Uri.EMPTY,
+                fileName = "sample.jpg",
+                mimeType = "image/jpeg",
+                width = 1920,
+                height = 1080,
+                rotation = null,
+                isVideo = false,
+                format = MediaFormat.JPG
+            )
+        )
+    }
+    
     AppTheme {
         AppScaffold(appViewModel) { innerPadding ->
             ConvertAndCompressScreen(AppViewModel(), Modifier.padding(innerPadding))
         }
     }
+}
+
+fun getFormatsList(isVideo: Boolean?) = when (isVideo) {
+    true -> VIDEO_FORMATS
+    false -> IMAGE_FORMATS
+    null -> emptyList()
 }
