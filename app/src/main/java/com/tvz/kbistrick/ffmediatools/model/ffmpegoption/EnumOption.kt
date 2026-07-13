@@ -1,6 +1,6 @@
 @file:Suppress("PropertyName")
 
-package com.tvz.kbistrick.ffmediatools.model
+package com.tvz.kbistrick.ffmediatools.model.ffmpegoption
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.DropdownMenuItem
@@ -17,22 +17,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 
-interface FFMpegOption {
-    @Composable
-    fun Render(onValueChange: () -> Unit)
-
-    fun toArgs(): List<String>
-}
-
 abstract class EnumOption(defaultOption: Option?) : FFMpegOption {
     protected abstract val LABEL: String
     protected abstract val KEY: String
     protected abstract val OPTIONS: List<Option>
+
     protected var selectedOption: Option? = defaultOption
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    override fun Render(onValueChange: () -> Unit) {
+    override fun Render(onValueChanged: () -> Unit) {
         var expanded by remember { mutableStateOf(false) }
 
         ExposedDropdownMenuBox(
@@ -61,7 +55,7 @@ abstract class EnumOption(defaultOption: Option?) : FFMpegOption {
                         onClick = {
                             selectedOption = option
                             expanded = false
-                            onValueChange()
+                            onValueChanged()
                         }
                     )
                 }
@@ -73,51 +67,8 @@ abstract class EnumOption(defaultOption: Option?) : FFMpegOption {
         val selectedValue = selectedOption
 
         return if (selectedValue == null) emptyList()
-        else listOf("-q:v", selectedValue.value)
+        else listOf(KEY, selectedValue.value)
     }
 
     data class Option(val value: String, val display: String)
-}
-
-class JpegQualityOption(defaultValue: Option?) : EnumOption(defaultValue) {
-    override val LABEL = "Quality"
-    override val KEY = "-q:v"
-
-    override val OPTIONS = listOf(
-        Option("1", "Best (1)"),
-        Option("2", "Best (2)"),
-        Option("3", "Best (3)"),
-        Option("4", "Best (4)"),
-        Option("5", "Best (5)"),
-        Option("6", "Best (6)"),
-        Option("7", "Good (7)"),
-        Option("8", "Good (8)"),
-        Option("9", "Good (9)"),
-        Option("10", "Good (10)"),
-        Option("11", "Good (11)"),
-        Option("12", "Good (12)"),
-        Option("13", "Average (13)"),
-        Option("14", "Average (14)"),
-        Option("15", "Average (15)"),
-        Option("16", "Average (16)"),
-        Option("17", "Average (17)"),
-        Option("18", "Average (18)"),
-        Option("19", "Average (19)"),
-        Option("20", "Bad (20)"),
-        Option("21", "Bad (21)"),
-        Option("22", "Bad (22)"),
-        Option("23", "Bad (23)"),
-        Option("24", "Bad (24)"),
-        Option("25", "Bad (25)"),
-        Option("26", "Worst (26)"),
-        Option("27", "Worst (27)"),
-        Option("28", "Worst (28)"),
-        Option("29", "Worst (29)"),
-        Option("30", "Worst (30)"),
-        Option("31", "Worst (31)"),
-    )
-
-    companion object {
-        fun init() = JpegQualityOption(null)
-    }
 }

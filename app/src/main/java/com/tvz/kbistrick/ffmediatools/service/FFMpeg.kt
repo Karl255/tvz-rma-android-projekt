@@ -28,7 +28,8 @@ object FFMpeg {
             }
 
             val exitCode = process.waitFor()
-            Log.i(TAG, "Process finished with exit code $exitCode")
+
+            Log.println(if (exitCode == 0) Log.INFO else Log.ERROR, TAG, "Process finished with exit code $exitCode")
 
             exitCode == 0
         } catch (e: Exception) {

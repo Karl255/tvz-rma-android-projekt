@@ -32,7 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import com.tvz.kbistrick.ffmediatools.model.FFMpegOption
+import com.tvz.kbistrick.ffmediatools.model.ffmpegoption.FFMpegOption
 import com.tvz.kbistrick.ffmediatools.model.MediaFormat
 import com.tvz.kbistrick.ffmediatools.model.MediaInfo
 import com.tvz.kbistrick.ffmediatools.service.FFMpegService
@@ -47,7 +47,8 @@ import kotlin.time.Clock
 val IMAGE_FORMATS = listOf(
     MediaFormat.PNG,
     MediaFormat.JPG,
-    MediaFormat.WEBP,
+    // not supported by binary
+    //MediaFormat.WEBP,
 )
 
 val VIDEO_FORMATS = listOf(
@@ -77,6 +78,12 @@ fun ConvertAndCompressScreen(appViewModel: AppViewModel, modifier: Modifier = Mo
     val runTool = debounced(ms = 1000, coroutineScope = scope) {
         val media = appViewModel.media ?: return@debounced
         val selectedFormat = selectedFormat ?: return@debounced
+
+        if (!ffmpegOptions.all { it.isValid() }) {
+            Log.d("ConvertAndCompressScreen", "Some option is invalid")
+            return@debounced
+        }
+
         val options = ffmpegOptions.flatMap { it.toArgs() }
         appViewModel.updateProcessedMediaPath(null)
 
@@ -162,7 +169,7 @@ fun ConvertAndCompressScreen(appViewModel: AppViewModel, modifier: Modifier = Mo
         }
 
         ffmpegOptions.forEach { ffmpegOption ->
-            ffmpegOption.Render(onValueChange = {
+            ffmpegOption.Render(onValueChanged = {
                 ffmpegOptionsChangedKey = Clock.System.now().toEpochMilliseconds()
             })
         }

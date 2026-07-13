@@ -164,6 +164,7 @@ class FFMpegJobRunningService : Service() {
         val success = FFMpeg.execute(
             this,
             listOf(
+                "-hide_banner",
                 "-i",
                 mediaPath,
                 "-frames:v",
